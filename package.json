@@ -1,8 +1,13 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "whatsapp-ai-assistant",
+  "description": "A Chrome extensions that enhances WhatsApp Web with AI-powered features",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "author": {
+    "name": "M Anas Latif",
+    "email": "contact@anaslatif.dev",
+    "url": "https://m.anaslatif.dev"
+  },
   "type": "module",
   "scripts": {
     "dev": "wxt",
