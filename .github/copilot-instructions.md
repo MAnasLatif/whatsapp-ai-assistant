@@ -85,6 +85,12 @@ Content scripts should inject React components using Shadow DOM to isolate style
 
 Run `pnpm compile` before committing to catch TypeScript errors. No test framework configured yet.
 
+## documentation
+
+- Not create any docs or md files.
+- a doc "docs/update.md" file that is used to maintain update history by AI
+- if change any Requirements feature then update srs doc.
+
 ## Resources
 
 - [WXT Documentation](https://wxt.dev)
