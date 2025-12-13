@@ -2,15 +2,16 @@
 
 ## Project Overview
 
-Chrome extension built with **WXT + React 19 + TypeScript** that enhances WhatsApp Web with AI-powered features (message analysis, translation, reply generation) via OpenAI APIs. See [docs/srs.md](../docs/srs.md) for complete requirements.
+Chrome extension built with **WXT + TypeScript** that enhances WhatsApp Web with AI-powered features (message analysis, translation, reply generation) via OpenAI APIs. See [docs/srs.md](../docs/srs.md) for complete requirements.
 
 ## Architecture
 
 ```
 entrypoints/
 ├── background.ts     # Service worker: OpenAI API calls, caching, message routing
-├── content.ts        # DOM manipulation: inject sidebar & hover buttons into WhatsApp Web
-└── popup/            # Extension popup (React): settings & API key configuration
+└── content/          # DOM manipulation: inject UI components into WhatsApp Web
+    ├── index.ts      # Main content script entry point
+    └── ui/           # UI components (settings panel, action buttons, etc.)
 ```
 
 **Data Flow:** User Interaction → Content Script → Background Worker → OpenAI API → Sidebar UI
@@ -30,7 +31,6 @@ npm compile          # TypeScript check (no emit)
 
 - Use `defineBackground()` for service workers - auto-imports from WXT
 - Use `defineContentScript({ matches, main })` for content scripts
-- Popup uses standard React entry in `entrypoints/popup/`
 
 ### Content Script Targeting
 
@@ -72,12 +72,12 @@ await browser.storage.local.set({ [`chat_${chatId}`]: summaryData });
 
 ### DOM Injection (Sidebar/Hover Button)
 
-Content scripts should inject React components using Shadow DOM to isolate styles from WhatsApp's CSS.
+Content scripts should inject UI components using Shadow DOM to isolate styles from WhatsApp's CSS. Use vanilla TypeScript/JavaScript for DOM manipulation.
 
 ## Conventions
 
-- **File naming:** `kebab-case` for files, `PascalCase` for React components
-- **State management:** React hooks (useState/useContext) - no external state library
+- **File naming:** `kebab-case` for files, `PascalCase` for classes/types
+- **State management:** Use native browser storage APIs and vanilla JavaScript patterns
 - **API keys:** Store in `browser.storage.local`, never commit to code
 - **Error handling:** Retry failed API calls up to 2 times (NFR-08)
 

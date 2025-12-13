@@ -1,3 +1,3 @@
-# WXT + React
+# WhatsApp AI Assistant
 
-This template should help get you started developing with React in WXT.
+A Chrome extension built with WXT and TypeScript that enhances WhatsApp Web with AI-powered features.
