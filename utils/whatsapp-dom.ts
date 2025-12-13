@@ -3,6 +3,8 @@
  * Helper functions for extracting and manipulating WhatsApp Web DOM elements
  */
 
+import type { WhatsAppTheme } from "./types";
+
 export interface MessageData {
   id: string | null;
   chatId: string | null;
@@ -19,6 +21,123 @@ export interface MessageData {
   mediaSrc?: string;
   mediaDuration?: string;
 }
+
+// ============================================
+// Theme Detection
+// ============================================
+
+/**
+ * Detect current WhatsApp theme (dark or light)
+ */
+export function detectTheme(): WhatsAppTheme {
+  // Check for dark mode class on body or html
+  const isDark =
+    document.body.classList.contains("dark") ||
+    document.documentElement.classList.contains("dark") ||
+    document.body.getAttribute("data-theme") === "dark" ||
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  // Also check WhatsApp's CSS variables or background
+  const bodyStyle = window.getComputedStyle(document.body);
+  const bgColor = bodyStyle.backgroundColor;
+
+  // Parse RGB values
+  const rgb = bgColor.match(/\d+/g);
+  if (rgb && rgb.length >= 3) {
+    const brightness =
+      (parseInt(rgb[0]) * 299 +
+        parseInt(rgb[1]) * 587 +
+        parseInt(rgb[2]) * 114) /
+      1000;
+    if (brightness < 128) {
+      return "dark";
+    }
+  }
+
+  return isDark ? "dark" : "light";
+}
+
+/**
+ * Observe theme changes
+ */
+export function observeThemeChanges(
+  callback: (theme: WhatsAppTheme) => void
+): MutationObserver {
+  let currentTheme = detectTheme();
+
+  const observer = new MutationObserver(() => {
+    const newTheme = detectTheme();
+    if (newTheme !== currentTheme) {
+      currentTheme = newTheme;
+      callback(newTheme);
+    }
+  });
+
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme", "style"],
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
+
+  // Also listen for system theme changes
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", (e) => {
+      const newTheme: WhatsAppTheme = e.matches ? "dark" : "light";
+      if (newTheme !== currentTheme) {
+        currentTheme = newTheme;
+        callback(newTheme);
+      }
+    });
+
+  return observer;
+}
+
+// ============================================
+// DOM Utilities
+// ============================================
+
+/**
+ * Wait for an element to appear in the DOM
+ */
+export function waitForElement(
+  selector: string,
+  timeout: number = 10000
+): Promise<Element> {
+  return new Promise((resolve, reject) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      resolve(element);
+      return;
+    }
+
+    const observer = new MutationObserver((mutations, obs) => {
+      const el = document.querySelector(selector);
+      if (el) {
+        obs.disconnect();
+        resolve(el);
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    setTimeout(() => {
+      observer.disconnect();
+      reject(new Error(`Element ${selector} not found within ${timeout}ms`));
+    }, timeout);
+  });
+}
+
+// ============================================
+// Message Extraction
+// ============================================
 
 /**
  * Extracts chat ID from data-id attribute

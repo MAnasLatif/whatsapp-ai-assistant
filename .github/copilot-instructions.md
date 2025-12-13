@@ -18,10 +18,10 @@ entrypoints/
 ## Development Commands
 
 ```bash
-pnpm dev              # Start dev server with HMR (Chrome)
-pnpm dev:firefox      # Start dev server (Firefox)
-pnpm build            # Production build
-pnpm compile          # TypeScript check (no emit)
+npm dev              # Start dev server with HMR (Chrome)
+npm dev:firefox      # Start dev server (Firefox)
+npm build            # Production build
+npm compile          # TypeScript check (no emit)
 ```
 
 ## WXT-Specific Patterns
