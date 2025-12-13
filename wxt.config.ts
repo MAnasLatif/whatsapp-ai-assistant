@@ -18,9 +18,9 @@ export default defineConfig({
       128: "icon/128.png",
     },
   },
-  // Use webExt instead of runner (WXT v0.20.0+)
   webExt: {
     chromiumProfile: ".wxt/chrome-data",
     firefoxProfile: ".wxt/firefox-data",
+    keepProfileChanges: true,
   },
 });
