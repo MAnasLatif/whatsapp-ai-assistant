@@ -33,13 +33,15 @@ export async function getSettings(): Promise<UserSettings> {
     const stored = result[STORAGE_KEYS.SETTINGS];
 
     if (!stored) {
+      console.log("[Storage] No settings found, using defaults");
       return defaultSettings;
     }
 
+    console.log("[Storage] Settings loaded from storage");
     // Merge with defaults to handle new settings fields
     return deepMerge(defaultSettings, stored) as UserSettings;
   } catch (error) {
-    console.error("Failed to load settings:", error);
+    console.error("[Storage] Failed to load settings:", error);
     return defaultSettings;
   }
 }
@@ -52,8 +54,9 @@ export async function saveSettings(settings: UserSettings): Promise<void> {
     await browser.storage.local.set({
       [STORAGE_KEYS.SETTINGS]: settings,
     });
+    console.log("[Storage] Settings saved successfully");
   } catch (error) {
-    console.error("Failed to save settings:", error);
+    console.error("[Storage] Failed to save settings:", error);
     throw error;
   }
 }

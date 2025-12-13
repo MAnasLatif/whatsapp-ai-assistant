@@ -21,12 +21,18 @@ import type {
 } from "@/utils/types";
 import type { MessageData } from "@/utils/whatsapp-dom";
 
+// Import storage debug tools in dev mode
+if (import.meta.env.DEV) {
+  import("@/utils/storage-debug");
+}
+
 // API Configuration
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const MAX_RETRIES = 2;
 
 export default defineBackground(() => {
   console.log("[WhatsApp AI Assistant] Background worker started");
+  console.log("[WhatsApp AI Assistant] Dev mode:", import.meta.env.DEV);
 
   // Listen for messages from content script
   browser.runtime.onMessage.addListener(
