@@ -546,6 +546,155 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   margin-top: 4px;
 }
 
+/* Settings Info Banner */
+.wa-ai-settings-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: ${
+    theme === "dark" ? "rgba(0,168,132,0.15)" : "rgba(0,168,132,0.1)"
+  };
+  border-bottom: 1px solid ${colors.border};
+  font-size: 12px;
+  color: ${colors.textSecondary};
+}
+
+.wa-ai-settings-info svg {
+  flex-shrink: 0;
+  fill: ${colors.primary};
+}
+
+/* Info Banner */
+.wa-ai-info-banner {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: ${
+    theme === "dark" ? "rgba(59,130,246,0.15)" : "rgba(219,234,254,1)"
+  };
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid ${
+    theme === "dark" ? "rgba(59,130,246,0.3)" : "rgba(147,197,253,1)"
+  };
+}
+
+.wa-ai-info-banner svg {
+  flex-shrink: 0;
+  fill: ${theme === "dark" ? "rgba(147,197,253,1)" : "rgba(59,130,246,1)"};
+}
+
+.wa-ai-info-banner strong {
+  display: block;
+  font-weight: 600;
+  color: ${colors.text};
+  margin-bottom: 4px;
+}
+
+.wa-ai-info-banner p {
+  font-size: 13px;
+  color: ${colors.textSecondary};
+  line-height: 1.5;
+}
+
+/* Stories List */
+.wa-ai-stories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.wa-ai-story-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : colors.background
+  };
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.wa-ai-story-item:hover {
+  border-color: ${colors.primary};
+  background: ${
+    theme === "dark" ? "rgba(0,168,132,0.08)" : "rgba(0,168,132,0.03)"
+  };
+}
+
+.wa-ai-story-info {
+  flex: 1;
+}
+
+.wa-ai-story-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin-bottom: 4px;
+}
+
+.wa-ai-story-meta {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+}
+
+.wa-ai-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: ${colors.textSecondary};
+}
+
+.wa-ai-btn-icon:hover {
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"
+  };
+  color: ${colors.error};
+}
+
+.wa-ai-btn-icon svg {
+  fill: currentColor;
+}
+
+/* Empty State */
+.wa-ai-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.wa-ai-empty-state svg {
+  margin-bottom: 16px;
+  fill: ${colors.textSecondary};
+}
+
+.wa-ai-empty-state p {
+  font-size: 14px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin-bottom: 6px;
+}
+
+.wa-ai-empty-state span {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+}
+
 /* Animations */
 @keyframes wa-ai-fade-in {
   from {

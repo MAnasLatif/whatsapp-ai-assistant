@@ -1,14 +1,13 @@
 /**
- * Settings Panel Component
- * FR-03 to FR-36: Modal settings panel with tabs for General, AI Config, Cache, Privacy
+ * Settings Panel Component - Chat-Specific Settings
+ * Shows cache management and story threads for the current chat
+ * Global settings moved to extension popup
  */
 
 import type {
   WhatsAppTheme,
   UserSettings,
   CacheStatistics,
-  AIModel,
-  ResponseTone,
 } from "@/utils/types";
 import { DEFAULT_SETTINGS } from "@/utils/types";
 import {
@@ -19,7 +18,7 @@ import {
   formatBytes,
 } from "@/utils/storage";
 
-type TabId = "general" | "ai" | "cache" | "privacy";
+type TabId = "cache" | "stories";
 
 export class SettingsPanel {
   private container: HTMLElement;
@@ -28,7 +27,8 @@ export class SettingsPanel {
   private onClose: () => void;
   private settings: UserSettings = DEFAULT_SETTINGS;
   private cacheStats: CacheStatistics | null = null;
-  private activeTab: TabId = "general";
+  private activeTab: TabId = "cache";
+  private currentChatId: string | null = null;
 
   constructor(
     container: HTMLElement,
@@ -72,21 +72,25 @@ export class SettingsPanel {
     panel.className = "wa-ai-settings-panel";
     panel.innerHTML = `
       <div class="wa-ai-settings-header">
-        <h2 class="wa-ai-settings-title">AI Assistant Settings</h2>
+        <h2 class="wa-ai-settings-title">Chat Settings</h2>
         <button class="wa-ai-close-btn" aria-label="Close">
           <svg viewBox="0 0 24 24" width="20" height="20">
             <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </button>
       </div>
+      <div class="wa-ai-settings-info">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span>For general settings, click the extension icon in toolbar</span>
+      </div>
       <div class="wa-ai-settings-tabs">
-        <button class="wa-ai-tab-btn active" data-tab="general">General</button>
-        <button class="wa-ai-tab-btn" data-tab="ai">AI Config</button>
-        <button class="wa-ai-tab-btn" data-tab="cache">Cache</button>
-        <button class="wa-ai-tab-btn" data-tab="privacy">Privacy</button>
+        <button class="wa-ai-tab-btn active" data-tab="cache">Cache Management</button>
+        <button class="wa-ai-tab-btn" data-tab="stories">Story Threads</button>
       </div>
       <div class="wa-ai-settings-content">
-        ${this.renderTabContent("general")}
+        ${this.renderTabContent("cache")}
       </div>
     `;
 
@@ -125,200 +129,13 @@ export class SettingsPanel {
 
   private renderTabContent(tab: TabId): string {
     switch (tab) {
-      case "general":
-        return this.renderGeneralTab();
-      case "ai":
-        return this.renderAITab();
       case "cache":
         return this.renderCacheTab();
-      case "privacy":
-        return this.renderPrivacyTab();
+      case "stories":
+        return this.renderStoriesTab();
       default:
         return "";
     }
-  }
-
-  private renderGeneralTab(): string {
-    const { general } = this.settings;
-
-    return `
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">Output Language</label>
-        <select class="wa-ai-select" id="wa-ai-output-language">
-          <option value="en" ${
-            general.outputLanguage === "en" ? "selected" : ""
-          }>English</option>
-          <option value="es" ${
-            general.outputLanguage === "es" ? "selected" : ""
-          }>Spanish</option>
-          <option value="fr" ${
-            general.outputLanguage === "fr" ? "selected" : ""
-          }>French</option>
-          <option value="de" ${
-            general.outputLanguage === "de" ? "selected" : ""
-          }>German</option>
-          <option value="it" ${
-            general.outputLanguage === "it" ? "selected" : ""
-          }>Italian</option>
-          <option value="pt" ${
-            general.outputLanguage === "pt" ? "selected" : ""
-          }>Portuguese</option>
-          <option value="ru" ${
-            general.outputLanguage === "ru" ? "selected" : ""
-          }>Russian</option>
-          <option value="zh" ${
-            general.outputLanguage === "zh" ? "selected" : ""
-          }>Chinese</option>
-          <option value="ja" ${
-            general.outputLanguage === "ja" ? "selected" : ""
-          }>Japanese</option>
-          <option value="ko" ${
-            general.outputLanguage === "ko" ? "selected" : ""
-          }>Korean</option>
-          <option value="ar" ${
-            general.outputLanguage === "ar" ? "selected" : ""
-          }>Arabic</option>
-          <option value="hi" ${
-            general.outputLanguage === "hi" ? "selected" : ""
-          }>Hindi</option>
-          <option value="ur" ${
-            general.outputLanguage === "ur" ? "selected" : ""
-          }>Urdu</option>
-        </select>
-      </div>
-
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">Messages to Analyze (5-50)</label>
-        <input 
-          type="number" 
-          class="wa-ai-input" 
-          id="wa-ai-message-limit"
-          min="5" 
-          max="50" 
-          value="${general.messageLimit}"
-        />
-      </div>
-
-      <div class="wa-ai-toggle">
-        <div>
-          <div class="wa-ai-toggle-label">Enable Hover Button</div>
-          <div class="wa-ai-toggle-description">Show AI action button when hovering over messages</div>
-        </div>
-        <div class="wa-ai-switch ${
-          general.enableHoverButton ? "active" : ""
-        }" id="wa-ai-hover-btn-toggle">
-          <div class="wa-ai-switch-thumb"></div>
-        </div>
-      </div>
-
-      <div style="margin-top: 20px;">
-        <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-general">Save Changes</button>
-      </div>
-    `;
-  }
-
-  private renderAITab(): string {
-    const { ai } = this.settings;
-
-    const models: { value: AIModel; label: string }[] = [
-      { value: "gpt-4o", label: "GPT-4o (Most capable)" },
-      { value: "gpt-4o-mini", label: "GPT-4o Mini (Fast & efficient)" },
-      { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
-      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (Fastest)" },
-    ];
-
-    const tones: { value: ResponseTone; label: string }[] = [
-      { value: "neutral", label: "Neutral" },
-      { value: "friendly", label: "Friendly" },
-      { value: "professional", label: "Professional" },
-      { value: "casual", label: "Casual" },
-    ];
-
-    return `
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">OpenAI API Key</label>
-        <input 
-          type="password" 
-          class="wa-ai-input" 
-          id="wa-ai-api-key"
-          placeholder="sk-..."
-          value="${ai.apiKey}"
-        />
-        <div style="margin-top: 8px;">
-          <button class="wa-ai-btn wa-ai-btn-secondary" id="wa-ai-validate-key" style="font-size: 12px;">
-            Validate Key
-          </button>
-          <span id="wa-ai-key-status" style="margin-left: 8px; font-size: 12px;"></span>
-        </div>
-      </div>
-
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">AI Model</label>
-        <select class="wa-ai-select" id="wa-ai-model">
-          ${models
-            .map(
-              (m) =>
-                `<option value="${m.value}" ${
-                  ai.model === m.value ? "selected" : ""
-                }>${m.label}</option>`
-            )
-            .join("")}
-        </select>
-      </div>
-
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">Default Response Tone</label>
-        <select class="wa-ai-select" id="wa-ai-tone">
-          ${tones
-            .map(
-              (t) =>
-                `<option value="${t.value}" ${
-                  ai.defaultTone === t.value ? "selected" : ""
-                }>${t.label}</option>`
-            )
-            .join("")}
-        </select>
-      </div>
-
-      <div class="wa-ai-form-group">
-        <label class="wa-ai-label">Enabled Features</label>
-        ${this.renderFeatureToggles()}
-      </div>
-
-      <div style="margin-top: 20px;">
-        <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-ai">Save Changes</button>
-      </div>
-    `;
-  }
-
-  private renderFeatureToggles(): string {
-    const features = [
-      { key: "analyze", label: "Analyze Messages" },
-      { key: "translate", label: "Translation" },
-      { key: "explainContext", label: "Explain Context" },
-      { key: "detectTone", label: "Tone Detection" },
-      { key: "generateReply", label: "Reply Generation" },
-      { key: "smartSuggestions", label: "Smart Suggestions" },
-    ];
-
-    return features
-      .map(
-        (f) => `
-        <div class="wa-ai-toggle">
-          <div class="wa-ai-toggle-label">${f.label}</div>
-          <div class="wa-ai-switch ${
-            this.settings.ai.enabledFeatures[
-              f.key as keyof typeof this.settings.ai.enabledFeatures
-            ]
-              ? "active"
-              : ""
-          }" data-feature="${f.key}">
-            <div class="wa-ai-switch-thumb"></div>
-          </div>
-        </div>
-      `
-      )
-      .join("");
   }
 
   private renderCacheTab(): string {
@@ -402,52 +219,81 @@ export class SettingsPanel {
     `;
   }
 
-  private renderPrivacyTab(): string {
-    const { privacy } = this.settings;
-
+  private renderStoriesTab(): string {
     return `
-      <div class="wa-ai-toggle">
+      <div class="wa-ai-info-banner">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
         <div>
-          <div class="wa-ai-toggle-label">Data Collection</div>
-          <div class="wa-ai-toggle-description">Allow anonymous usage data to improve the extension</div>
-        </div>
-        <div class="wa-ai-switch ${
-          privacy.dataCollectionEnabled ? "active" : ""
-        }" id="wa-ai-data-collection">
-          <div class="wa-ai-switch-thumb"></div>
+          <strong>Story Threads</strong>
+          <p>View and manage conversation story threads for this chat. Each thread represents a distinct topic or context within the conversation.</p>
         </div>
       </div>
 
-      <div class="wa-ai-toggle">
-        <div>
-          <div class="wa-ai-toggle-label">Auto-Delete Processed Data</div>
-          <div class="wa-ai-toggle-description">Automatically delete data after AI processing</div>
-        </div>
-        <div class="wa-ai-switch ${
-          privacy.autoDeleteProcessedData ? "active" : ""
-        }" id="wa-ai-auto-delete">
-          <div class="wa-ai-switch-thumb"></div>
-        </div>
-      </div>
-
-      <div class="wa-ai-form-group" style="margin-top: 20px;">
-        <label class="wa-ai-label">Data Sent to OpenAI</label>
-        <div style="font-size: 13px; color: var(--wa-ai-text-secondary); line-height: 1.6;">
-          <ul style="margin: 8px 0; padding-left: 20px;">
-            <li>Message content you explicitly select for analysis</li>
-            <li>Media content (images/voice) when you request processing</li>
-            <li>Chat context for reply generation (when enabled)</li>
-          </ul>
-          <p style="margin-top: 12px;">
-            <strong>Note:</strong> No data is stored on external servers. All processing is done via direct API calls to OpenAI.
-          </p>
-        </div>
+      <div class="wa-ai-stories-list" id="wa-ai-stories-list">
+        ${this.renderStoriesList()}
       </div>
 
       <div style="margin-top: 20px;">
-        <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-privacy">Save Changes</button>
+        <button class="wa-ai-btn wa-ai-btn-secondary" id="wa-ai-refresh-stories">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 6px;">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          Refresh Stories
+        </button>
       </div>
     `;
+  }
+
+  private renderStoriesList(): string {
+    // Placeholder for stories - in real implementation, this would fetch from storage
+    const stories = [
+      {
+        id: "story-1",
+        title: "Project Discussion",
+        messageCount: 25,
+        lastUpdate: "2 hours ago",
+      },
+      {
+        id: "story-2",
+        title: "Weekend Plans",
+        messageCount: 12,
+        lastUpdate: "5 hours ago",
+      },
+    ];
+
+    if (stories.length === 0) {
+      return `
+        <div class="wa-ai-empty-state">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" opacity="0.3">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+          </svg>
+          <p>No story threads yet</p>
+          <span>Stories will appear as you chat and use AI features</span>
+        </div>
+      `;
+    }
+
+    return stories
+      .map(
+        (story) => `
+      <div class="wa-ai-story-item">
+        <div class="wa-ai-story-info">
+          <div class="wa-ai-story-title">${story.title}</div>
+          <div class="wa-ai-story-meta">
+            ${story.messageCount} messages • ${story.lastUpdate}
+          </div>
+        </div>
+        <button class="wa-ai-btn wa-ai-btn-icon" data-story="${story.id}" title="Delete story">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+        </button>
+      </div>
+    `
+      )
+      .join("");
   }
 
   private setupTabListeners(panel: HTMLElement): void {
@@ -458,82 +304,25 @@ export class SettingsPanel {
       });
     });
 
-    // Save buttons
-    const saveGeneral = panel.querySelector("#wa-ai-save-general");
-    saveGeneral?.addEventListener("click", () =>
-      this.saveGeneralSettings(panel)
-    );
-
-    const saveAI = panel.querySelector("#wa-ai-save-ai");
-    saveAI?.addEventListener("click", () => this.saveAISettings(panel));
-
+    // Save cache settings button
     const saveCache = panel.querySelector("#wa-ai-save-cache");
     saveCache?.addEventListener("click", () => this.saveCacheSettings(panel));
 
-    const savePrivacy = panel.querySelector("#wa-ai-save-privacy");
-    savePrivacy?.addEventListener("click", () =>
-      this.savePrivacySettings(panel)
-    );
-
-    // Validate API key
-    const validateKey = panel.querySelector("#wa-ai-validate-key");
-    validateKey?.addEventListener("click", () => this.validateAPIKey(panel));
-
-    // Clear cache
+    // Clear cache button
     const clearCache = panel.querySelector("#wa-ai-clear-cache");
     clearCache?.addEventListener("click", () => this.handleClearCache(panel));
-  }
 
-  private async saveGeneralSettings(panel: HTMLElement): Promise<void> {
-    const outputLanguage = (
-      panel.querySelector("#wa-ai-output-language") as HTMLSelectElement
-    )?.value;
-    const messageLimit = parseInt(
-      (panel.querySelector("#wa-ai-message-limit") as HTMLInputElement)
-        ?.value || "20"
-    );
-    const enableHoverButton =
-      panel
-        .querySelector("#wa-ai-hover-btn-toggle")
-        ?.classList.contains("active") ?? true;
+    // Refresh stories button
+    const refreshStories = panel.querySelector("#wa-ai-refresh-stories");
+    refreshStories?.addEventListener("click", () => this.refreshStories(panel));
 
-    this.settings.general = {
-      ...this.settings.general,
-      outputLanguage,
-      messageLimit: Math.min(50, Math.max(5, messageLimit)),
-      enableHoverButton,
-    };
-
-    await saveSettings(this.settings);
-    this.showSaveSuccess(panel);
-  }
-
-  private async saveAISettings(panel: HTMLElement): Promise<void> {
-    const apiKey =
-      (panel.querySelector("#wa-ai-api-key") as HTMLInputElement)?.value || "";
-    const model = (panel.querySelector("#wa-ai-model") as HTMLSelectElement)
-      ?.value as AIModel;
-    const defaultTone = (
-      panel.querySelector("#wa-ai-tone") as HTMLSelectElement
-    )?.value as ResponseTone;
-
-    // Get feature toggles
-    const features = { ...this.settings.ai.enabledFeatures };
-    panel.querySelectorAll("[data-feature]").forEach((toggle) => {
-      const feature = (toggle as HTMLElement).dataset
-        .feature as keyof typeof features;
-      features[feature] = toggle.classList.contains("active");
+    // Delete story buttons
+    panel.querySelectorAll("[data-story]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const storyId = (e.currentTarget as HTMLElement).dataset.story;
+        if (storyId) this.deleteStory(storyId, panel);
+      });
     });
-
-    this.settings.ai = {
-      apiKey,
-      model,
-      defaultTone,
-      enabledFeatures: features,
-    };
-
-    await saveSettings(this.settings);
-    this.showSaveSuccess(panel);
   }
 
   private async saveCacheSettings(panel: HTMLElement): Promise<void> {
@@ -565,62 +354,6 @@ export class SettingsPanel {
     this.showSaveSuccess(panel);
   }
 
-  private async savePrivacySettings(panel: HTMLElement): Promise<void> {
-    const dataCollectionEnabled =
-      panel
-        .querySelector("#wa-ai-data-collection")
-        ?.classList.contains("active") ?? false;
-    const autoDeleteProcessedData =
-      panel.querySelector("#wa-ai-auto-delete")?.classList.contains("active") ??
-      false;
-
-    this.settings.privacy = {
-      ...this.settings.privacy,
-      dataCollectionEnabled,
-      autoDeleteProcessedData,
-    };
-
-    await saveSettings(this.settings);
-    this.showSaveSuccess(panel);
-  }
-
-  private async validateAPIKey(panel: HTMLElement): Promise<void> {
-    const apiKey =
-      (panel.querySelector("#wa-ai-api-key") as HTMLInputElement)?.value || "";
-    const statusEl = panel.querySelector("#wa-ai-key-status");
-
-    if (!apiKey) {
-      if (statusEl)
-        statusEl.innerHTML =
-          '<span style="color: var(--wa-ai-error);">Please enter an API key</span>';
-      return;
-    }
-
-    if (statusEl) statusEl.innerHTML = "<span>Validating...</span>";
-
-    try {
-      const response = await browser.runtime.sendMessage({
-        type: "VALIDATE_API_KEY",
-        payload: { apiKey },
-      });
-
-      if (response.success) {
-        if (statusEl)
-          statusEl.innerHTML =
-            '<span style="color: var(--wa-ai-success);">✓ Valid API key</span>';
-      } else {
-        if (statusEl)
-          statusEl.innerHTML = `<span style="color: var(--wa-ai-error);">✗ ${
-            response.error || "Invalid key"
-          }</span>`;
-      }
-    } catch (error) {
-      if (statusEl)
-        statusEl.innerHTML =
-          '<span style="color: var(--wa-ai-error);">✗ Validation failed</span>';
-    }
-  }
-
   private async handleClearCache(panel: HTMLElement): Promise<void> {
     if (
       confirm(
@@ -633,6 +366,26 @@ export class SettingsPanel {
         "cache",
         panel.closest(".wa-ai-settings-panel") as HTMLElement
       );
+    }
+  }
+
+  private async refreshStories(panel: HTMLElement): Promise<void> {
+    // Refresh the stories list
+    const storiesList = panel.querySelector("#wa-ai-stories-list");
+    if (storiesList) {
+      storiesList.innerHTML = this.renderStoriesList();
+      this.setupTabListeners(panel);
+    }
+  }
+
+  private async deleteStory(
+    storyId: string,
+    panel: HTMLElement
+  ): Promise<void> {
+    if (confirm("Are you sure you want to delete this story thread?")) {
+      // TODO: Implement story deletion
+      console.log("Deleting story:", storyId);
+      this.refreshStories(panel);
     }
   }
 

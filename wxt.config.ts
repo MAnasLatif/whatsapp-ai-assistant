@@ -17,6 +17,10 @@ export default defineConfig({
       48: "icon/48.png",
       128: "icon/128.png",
     },
+    action: {
+      default_title: "AI Assistant Settings",
+      default_popup: "popup.html",
+    },
   },
   webExt: {
     chromiumProfile: ".wxt/chrome-data",
