@@ -223,19 +223,23 @@ export function createApp(initialTheme: WhatsAppTheme): App {
         actionMenu?.show(rect.left, rect.bottom + 5, messageData);
       });
 
+      const div: HTMLDivElement = document.createElement("div");
+      div.className = "wa-ai-action-btn-container";
+      div.appendChild(button.element);
+
       // Find the message actions container
+      //   const actionsContainer = messageElement.querySelector(
+      //     '[class*="x78zum5"][class*="xbfrwjf"]'
+      //   );
       const actionsContainer = messageElement.querySelector(
-        '[class*="x78zum5"][class*="xbfrwjf"]'
+        ".focusable-list-item ._amk6._amlo"
       );
 
       if (
         actionsContainer &&
         !actionsContainer.querySelector(".wa-ai-action-btn")
       ) {
-        actionsContainer.insertBefore(
-          button.element,
-          actionsContainer.firstChild
-        );
+        actionsContainer.appendChild(div);
       }
     },
 

@@ -89,17 +89,37 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 /* Message Action Button */
+.wa-ai-action-btn-container {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: -60px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.focusable-list-item:hover .wa-ai-action-btn-container {
+  opacity: 1;
+}
+
+.focusable-list-item.message-in .wa-ai-action-btn-container {
+  left: auto;
+  right: -65px;
+}
+
 .wa-ai-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: transparent;
   cursor: pointer;
   border-radius: 50%;
-  color: ${colors.textSecondary};
+  color: var(--message-primary);
   transition: all 0.15s ease;
   margin-right: 4px;
 }
@@ -110,8 +130,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 .wa-ai-action-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   fill: currentColor;
 }
 
