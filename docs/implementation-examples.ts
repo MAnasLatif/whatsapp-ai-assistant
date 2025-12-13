@@ -11,7 +11,7 @@ import {
   observeNewMessages,
   injectAIButton,
   isGroupChat,
-} from "../utils/whatsapp-dom";
+} from "../src/utils/whatsapp-dom";
 
 // ============================================================================
 // Example 1: Initialize Extension on WhatsApp Web
