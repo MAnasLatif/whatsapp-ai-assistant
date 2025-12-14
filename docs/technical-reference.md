@@ -38,12 +38,13 @@ src/
 │   ├── dom-components.ts  # Global DOM selectors (110+ selectors)
 │   ├── whatsapp-dom.ts    # WhatsApp DOM manipulation
 │   ├── storage.ts         # Chrome storage wrapper
-│   └── storage-debug.ts   # Storage debugging tools
+│   ├── storage-debug.ts   # Storage debugging tools
+│   └── icons.ts           # Centralized SVG icons from svgrepo.com (25+ icons)
 ├── ui/                    # UI components (global)
 │   ├── app.ts             # Main UI orchestrator
 │   └── components/        # Individual UI components
-│       ├── settings-button.ts
-│       ├── settings-panel.ts
+│       ├── chat-button.ts
+│       ├── chat-panel.ts
 │       ├── action-menu.ts
 │       ├── message-action-button.ts
 │       └── results-display.ts
@@ -70,6 +71,94 @@ User Interaction → Content Script → Background Worker → OpenAI API
                     UI Components      Local Cache
                          ↓                   ↓
                   Shadow DOM Injection  Chrome Storage
+```
+
+---
+
+## Centralized Icons Library
+
+All SVG icons are centralized in `src/utils/icons.ts` (25+ icons). **Always use icons from https://www.svgrepo.com**.
+
+### Available Icons
+
+```typescript
+import { Icons } from "@/utils/icons";
+
+// AI Icons
+Icons.aiSparkle; // Main AI assistant icon
+
+// Action Icons
+Icons.analyze; // Magnifying glass with plus
+Icons.translate; // Language/translation symbol
+Icons.explain; // Question mark in circle
+Icons.tone; // Smiley face for sentiment
+Icons.reply; // Message bubble
+
+// UI Control Icons
+Icons.close; // X/close button
+Icons.info; // Information circle
+Icons.empty; // Empty state/inbox
+Icons.calendar; // Calendar/time
+Icons.delete; // Trash/delete
+Icons.story; // Book/story thread
+Icons.refresh; // Reload/refresh
+Icons.loading; // Spinner animation
+Icons.copy; // Clipboard
+Icons.check; // Success checkmark
+Icons.error; // Error/alert
+
+// User Icons
+Icons.settings; // Gear/settings
+Icons.user; // User profile
+Icons.group; // Multiple users
+```
+
+### Usage Examples
+
+```typescript
+// Direct usage in templates
+const buttonHTML = `<button>${Icons.close}</button>`;
+
+// In component classes
+class MyComponent {
+  render() {
+    return `
+      <div class="header">
+        <h2>Title</h2>
+        ${Icons.close}
+      </div>
+    `;
+  }
+}
+
+// Multiple icons
+const menuItems = [
+  { icon: Icons.analyze, label: "Analyze" },
+  { icon: Icons.translate, label: "Translate" },
+  { icon: Icons.reply, label: "Reply" },
+];
+```
+
+### Adding New Icons
+
+1. Find icon on https://www.svgrepo.com
+2. Download SVG code
+3. Add to `Icons` object in `src/utils/icons.ts`
+4. Add documentation comment with source URL
+5. Export as property of Icons object
+
+**Example:**
+
+```typescript
+export const Icons = {
+  // ... existing icons ...
+
+  /**
+   * New Icon - Description
+   * Source: https://www.svgrepo.com/svg/[id]/[name]
+   */
+  newIcon: `<svg viewBox="0 0 24 24">...</svg>`,
+};
 ```
 
 ---

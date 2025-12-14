@@ -20,12 +20,13 @@ src/
 │   ├── dom-components.ts # Global DOM selectors (110+ selectors)
 │   ├── whatsapp-dom.ts   # WhatsApp DOM manipulation utilities
 │   ├── storage.ts        # Chrome storage wrapper
-│   └── storage-debug.ts  # Storage debugging tools
+│   ├── storage-debug.ts  # Storage debugging tools
+│   └── icons.ts          # Centralized SVG icons from svgrepo.com (25+ icons)
 ├── ui/                   # UI components (global, reusable)
 │   ├── app.ts            # Main UI orchestrator
 │   └── components/       # Individual UI components (5 files)
-│       ├── settings-button.ts
-│       ├── settings-panel.ts
+│       ├── chat-button.ts
+│       ├── chat-panel.ts
 │       ├── action-menu.ts
 │       ├── message-action-button.ts
 │       └── results-display.ts
@@ -66,7 +67,7 @@ export default defineContentScript({
 
 - `@/` resolves to project root (configured in `.wxt/tsconfig.json`)
 - `@/types` → `src/types/` - All TypeScript type definitions
-- `@/utils` → `src/utils/` - Utility functions and DOM helpers
+- `@/utils` → `src/utils/` - Utility functions, DOM helpers, and centralized icons
 - `@/ui` → `src/ui/` - Global UI components
 - `@/styles` → `src/styles/` - Style files
 - `@/entrypoints` → `src/entrypoints/` - Extension entry points
@@ -76,11 +77,38 @@ export default defineContentScript({
 ```typescript
 import type { UserSettings, MessageData } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
-import { SettingsPanel } from "@/ui/components/settings-panel";
+import { Icons } from "@/utils/icons";
+import { ChatPanel } from "@/ui/components/chat-panel";
 import { injectStyles } from "@/styles/ui-styles";
 ```
 
 ## Key Implementation Patterns
+
+### Centralized Icons
+
+All SVG icons are centralized in `src/utils/icons.ts`. **Always use icons from svgrepo.com**:
+
+```typescript
+import { Icons } from "@/utils/icons";
+
+// Use icons directly
+const html = `<button>${Icons.close}</button>`;
+const icon = Icons.aiSparkle;
+
+// Available icons:
+// - AI: aiSparkle
+// - Actions: analyze, translate, explain, tone, reply
+// - UI Controls: close, info, empty, calendar, delete, story, refresh, loading, copy, check, error
+// - User: settings, user, group
+```
+
+**Benefits:**
+
+- Single source of truth for all icons (25+ icons)
+- All icons sourced from https://www.svgrepo.com
+- Consistent styling across the extension
+- Easy to update or add new icons
+- Reduces code duplication and bundle size
 
 ### Centralized DOM Selectors
 

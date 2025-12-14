@@ -5,6 +5,7 @@
 
 import type { WhatsAppTheme } from "@/types";
 import type { MessageData } from "@/utils/whatsapp-dom";
+import { Icons } from "@/utils/icons";
 
 interface ActionItem {
   id: string;
@@ -16,27 +17,27 @@ const ACTIONS: ActionItem[] = [
   {
     id: "analyze",
     label: "Analyze",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/><path d="M10 7v6M7 10h6"/></svg>`,
+    icon: Icons.analyze,
   },
   {
     id: "translate",
     label: "Translate",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"/></svg>`,
+    icon: Icons.translate,
   },
   {
     id: "explain",
     label: "Explain Context",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>`,
+    icon: Icons.explain,
   },
   {
     id: "tone",
     label: "Detect Tone",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>`,
+    icon: Icons.tone,
   },
   {
     id: "reply",
     label: "Generate Reply",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
+    icon: Icons.reply,
   },
 ];
 

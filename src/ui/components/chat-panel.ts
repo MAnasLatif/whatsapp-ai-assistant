@@ -12,6 +12,7 @@ import type {
   StoryThread,
 } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
+import { Icons } from "@/utils/icons";
 import {
   getChatContext,
   saveChatSettings,
@@ -94,15 +95,11 @@ export class ChatPanel {
           } • ${this.chatId.split("@")[0]}</p>
         </div>
         <button class="wa-ai-close-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/>
-          </svg>
+          ${Icons.close}
         </button>
       </div>
       <div class="wa-ai-chat-info">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-        </svg>
+        ${Icons.info}
         <span>For global AI settings, click the extension icon in toolbar</span>
       </div>
       <div class="wa-ai-chat-tabs">
@@ -172,9 +169,7 @@ export class ChatPanel {
     if (!summary) {
       return `
         <div class="wa-ai-empty-state">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" opacity="0.3">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-          </svg>
+          ${Icons.empty}
           <p>No summary yet</p>
           <span>Use AI features to generate a conversation summary</span>
           <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-generate-summary" style="margin-top: 16px;">
@@ -196,9 +191,7 @@ export class ChatPanel {
             } messages • Last updated: ${lastUpdated}</p>
           </div>
           <button class="wa-ai-btn wa-ai-btn-secondary" id="wa-ai-refresh-summary">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-            </svg>
+            ${Icons.refresh}
             Refresh
           </button>
         </div>
@@ -273,9 +266,7 @@ export class ChatPanel {
     if (stories.length === 0) {
       return `
         <div class="wa-ai-empty-state">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" opacity="0.3">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-          </svg>
+          ${Icons.story}
           <p>No story threads yet</p>
           <span>Stories will appear as you chat and use AI features</span>
         </div>
@@ -315,9 +306,7 @@ export class ChatPanel {
             <button class="wa-ai-btn wa-ai-btn-icon" data-story="${
               story.id
             }" title="Delete story">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-              </svg>
+              ${Icons.delete}
             </button>
           </div>
         `;

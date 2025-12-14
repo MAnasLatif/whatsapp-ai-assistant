@@ -5,6 +5,7 @@
 
 import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
+import { Icons } from "@/utils/icons";
 
 export class ResultsDisplay {
   private container: HTMLElement;
@@ -37,9 +38,7 @@ export class ResultsDisplay {
           actionLabels[action] || "Processing..."
         }</span>
         <button class="wa-ai-close-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/>
-          </svg>
+          ${Icons.close}
         </button>
       </div>
       <div class="wa-ai-loading">
@@ -95,9 +94,7 @@ export class ResultsDisplay {
           actionLabels[action] || "Result"
         }</span>
         <button class="wa-ai-close-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/>
-          </svg>
+          ${Icons.close}
         </button>
       </div>
       ${contentHtml}
@@ -117,9 +114,7 @@ export class ResultsDisplay {
       <div class="wa-ai-results-header">
         <span class="wa-ai-results-title">Error</span>
         <button class="wa-ai-close-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/>
-          </svg>
+          ${Icons.close}
         </button>
       </div>
       <div class="wa-ai-error">${this.escapeHtml(message)}</div>
