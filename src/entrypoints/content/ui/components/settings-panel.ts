@@ -11,6 +11,7 @@ import type {
   ChatSettings,
   StoryThread,
 } from "@/utils/types";
+import { DOMComponents } from "@/utils/dom-components";
 import {
   getChatContext,
   saveChatSettings,
@@ -75,13 +76,13 @@ export class SettingsPanel {
 
   private createElement(): HTMLElement {
     const overlay = document.createElement("div");
-    overlay.className = "wa-ai-settings-overlay";
+    overlay.className = DOMComponents.settingsOverlay.substring(1); // Remove . prefix
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) this.hide();
     });
 
     const panel = document.createElement("div");
-    panel.className = "wa-ai-settings-panel";
+    panel.className = DOMComponents.settingsPanel.substring(1); // Remove . prefix
     panel.innerHTML = `
       <div class="wa-ai-settings-header">
         <div>
@@ -117,10 +118,10 @@ export class SettingsPanel {
     `;
 
     // Setup event listeners
-    const closeBtn = panel.querySelector(".wa-ai-close-btn");
+    const closeBtn = panel.querySelector(DOMComponents.settingsCloseBtn);
     closeBtn?.addEventListener("click", () => this.hide());
 
-    const tabBtns = panel.querySelectorAll(".wa-ai-tab-btn");
+    const tabBtns = panel.querySelectorAll(DOMComponents.settingsTabBtn);
     tabBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const tab = (e.target as HTMLElement).dataset.tab as TabId;
@@ -139,13 +140,13 @@ export class SettingsPanel {
     this.activeTab = tab;
 
     // Update tab buttons
-    const tabBtns = panel.querySelectorAll(".wa-ai-tab-btn");
+    const tabBtns = panel.querySelectorAll(DOMComponents.settingsTabBtn);
     tabBtns.forEach((btn) => {
       btn.classList.toggle("active", (btn as HTMLElement).dataset.tab === tab);
     });
 
     // Update content
-    const content = panel.querySelector(".wa-ai-settings-content");
+    const content = panel.querySelector(DOMComponents.settingsContent);
     if (content) {
       content.innerHTML = this.renderTabContent(tab);
       this.setupTabListeners(panel);
@@ -410,38 +411,38 @@ export class SettingsPanel {
 
   private setupTabListeners(panel: HTMLElement): void {
     // Toggle switches
-    panel.querySelectorAll(".wa-ai-switch").forEach((toggle) => {
+    panel.querySelectorAll(DOMComponents.settingsSwitch).forEach((toggle) => {
       toggle.addEventListener("click", () => {
         toggle.classList.toggle("active");
       });
     });
 
     // Generate summary button
-    const generateSummary = panel.querySelector("#wa-ai-generate-summary");
+    const generateSummary = panel.querySelector(DOMComponents.generateSummary);
     generateSummary?.addEventListener("click", () =>
       this.generateSummary(panel)
     );
 
     // Refresh summary button
-    const refreshSummary = panel.querySelector("#wa-ai-refresh-summary");
+    const refreshSummary = panel.querySelector(DOMComponents.refreshSummary);
     refreshSummary?.addEventListener("click", () =>
       this.generateSummary(panel)
     );
 
     // Save settings button
-    const saveSettings = panel.querySelector("#wa-ai-save-settings");
+    const saveSettings = panel.querySelector(DOMComponents.saveSettings);
     saveSettings?.addEventListener("click", () => this.saveChatSettings(panel));
 
     // Clear chat data button
-    const clearData = panel.querySelector("#wa-ai-clear-chat-data");
+    const clearData = panel.querySelector(DOMComponents.clearChatData);
     clearData?.addEventListener("click", () => this.handleClearChatData(panel));
 
     // Refresh stories button
-    const refreshStories = panel.querySelector("#wa-ai-refresh-stories");
+    const refreshStories = panel.querySelector(DOMComponents.refreshStories);
     refreshStories?.addEventListener("click", () => this.refreshStories(panel));
 
     // Delete story buttons
-    panel.querySelectorAll("[data-story]").forEach((btn) => {
+    panel.querySelectorAll(DOMComponents.dataStory).forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const storyId = (e.currentTarget as HTMLElement).dataset.story;
         if (storyId) this.handleDeleteStory(storyId, panel);
@@ -466,7 +467,7 @@ export class SettingsPanel {
         );
         this.switchTab(
           "summary",
-          panel.closest(".wa-ai-settings-panel") as HTMLElement
+          panel.closest(DOMComponents.settingsPanel) as HTMLElement
         );
       }
     } catch (error) {
@@ -477,17 +478,17 @@ export class SettingsPanel {
 
   private async saveChatSettings(panel: HTMLElement): Promise<void> {
     const customPrompt =
-      (panel.querySelector("#wa-ai-custom-prompt") as HTMLTextAreaElement)
+      (panel.querySelector(DOMComponents.customPrompt) as HTMLTextAreaElement)
         ?.value || "";
     const preferredTone =
-      (panel.querySelector("#wa-ai-preferred-tone") as HTMLSelectElement)
+      (panel.querySelector(DOMComponents.preferredTone) as HTMLSelectElement)
         ?.value || undefined;
     const translationLanguage =
-      (panel.querySelector("#wa-ai-translation-lang") as HTMLSelectElement)
+      (panel.querySelector(DOMComponents.translationLang) as HTMLSelectElement)
         ?.value || undefined;
     const autoAnalyze =
       panel
-        .querySelector("#wa-ai-auto-analyze")
+        .querySelector(DOMComponents.autoAnalyze)
         ?.classList.contains("active") ?? true;
 
     const settings: ChatSettings = {
@@ -521,7 +522,7 @@ export class SettingsPanel {
       );
       this.switchTab(
         "summary",
-        panel.closest(".wa-ai-settings-panel") as HTMLElement
+        panel.closest(DOMComponents.settingsPanel) as HTMLElement
       );
     }
   }
@@ -534,7 +535,7 @@ export class SettingsPanel {
       this.isGroup
     );
 
-    const storiesList = panel.querySelector("#wa-ai-stories-list");
+    const storiesList = panel.querySelector(DOMComponents.storiesList);
     if (storiesList) {
       storiesList.innerHTML = this.renderStoriesList(this.chatContext.stories);
       this.setupTabListeners(panel);

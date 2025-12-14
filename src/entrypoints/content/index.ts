@@ -12,6 +12,7 @@ import {
   getAllMessages,
 } from "@/utils/whatsapp-dom";
 import type { WhatsAppTheme } from "@/utils/types";
+import { DOMComponents } from "@/utils/dom-components";
 
 // Global state
 let app: App | null = null;
@@ -69,16 +70,16 @@ async function waitForWhatsAppReady(): Promise<void> {
   console.log("[WhatsApp AI Assistant] Waiting for WhatsApp to load...");
 
   // Wait for the main app container
-  await waitForElement("#app", 30000);
+  await waitForElement(DOMComponents.app, 30000);
   console.log("[WhatsApp AI Assistant] #app found");
 
   // Wait for the side panel (chat list) to load - try multiple selectors
   try {
-    await waitForElement('[data-testid="chat-list"]', 10000);
+    await waitForElement(DOMComponents.chatList, 10000);
     console.log("[WhatsApp AI Assistant] chat-list found");
   } catch {
     // Fallback: wait for side panel
-    await waitForElement("#side", 10000);
+    await waitForElement(DOMComponents.side, 10000);
     console.log("[WhatsApp AI Assistant] #side found (fallback)");
   }
 
@@ -94,10 +95,10 @@ function setupMessageHoverObserver(): void {
 
   // Try multiple selectors for conversation area
   const selectors = [
-    '[data-testid="conversation-panel-messages"]',
+    DOMComponents.conversationPanel,
     '[role="application"]',
-    "#main",
-    ".copyable-area",
+    DOMComponents.main,
+    DOMComponents.copyableArea,
   ];
 
   let conversationArea: Element | null = null;
@@ -136,7 +137,10 @@ function handleMessageHover(event: Event): void {
     target.closest("div[data-id]") ||
     target.closest(".message-in, .message-out");
 
-  if (messageElement && !messageElement.querySelector(".wa-ai-action-btn")) {
+  if (
+    messageElement &&
+    !messageElement.querySelector(DOMComponents.aiActionButton)
+  ) {
     app?.injectMessageButton(messageElement as HTMLElement);
   }
 }

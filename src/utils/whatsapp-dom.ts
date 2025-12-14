@@ -4,6 +4,7 @@
  */
 
 import type { WhatsAppTheme } from "./types";
+import { DOMComponents } from "./dom-components";
 
 export interface MessageData {
   id: string | null;
@@ -182,7 +183,7 @@ export function extractFullTimestamp(prePlainText: string): string | null {
  * @returns true if group chat, false otherwise
  */
 export function isGroupChat(): boolean {
-  return !!document.querySelector("._amkz");
+  return !!document.querySelector(DOMComponents.groupIndicator);
 }
 
 /**
@@ -191,7 +192,7 @@ export function isGroupChat(): boolean {
  * @returns true if voice message
  */
 export function isVoiceMessage(messageElement: Element): boolean {
-  return !!messageElement.querySelector('[aria-label*="voice message" i]');
+  return !!messageElement.querySelector(DOMComponents.voiceMessageLabel);
 }
 
 /**
@@ -200,7 +201,9 @@ export function isVoiceMessage(messageElement: Element): boolean {
  * @returns Duration string (e.g., "0:24")
  */
 export function getVoiceDuration(messageElement: Element): string | null {
-  const durationElement = messageElement.querySelector(".x10l6tqk.x1fesggd");
+  const durationElement = messageElement.querySelector(
+    DOMComponents.voiceDuration
+  );
   return durationElement?.textContent || null;
 }
 
@@ -210,7 +213,7 @@ export function getVoiceDuration(messageElement: Element): string | null {
  * @returns true if image message
  */
 export function isImageMessage(messageElement: Element): boolean {
-  return !!messageElement.querySelector('img[src^="blob:"]');
+  return !!messageElement.querySelector(DOMComponents.imageBlob);
 }
 
 /**
@@ -224,7 +227,7 @@ export function getImageData(messageElement: Element): {
   height: string;
 } | null {
   const imgElement = messageElement.querySelector(
-    'img[src^="blob:"]'
+    DOMComponents.imageBlob
   ) as HTMLImageElement;
 
   if (!imgElement) return null;
@@ -242,7 +245,7 @@ export function getImageData(messageElement: Element): {
  * @returns true if reply message
  */
 export function isReply(messageElement: Element): boolean {
-  return !!messageElement.querySelector('[aria-label="Quoted message"]');
+  return !!messageElement.querySelector(DOMComponents.quotedMessage);
 }
 
 /**
@@ -251,7 +254,7 @@ export function isReply(messageElement: Element): boolean {
  * @returns true if forwarded message
  */
 export function isForwarded(messageElement: Element): boolean {
-  return !!messageElement.querySelector('[data-icon="forward-refreshed"]');
+  return !!messageElement.querySelector(DOMComponents.forwardIcon);
 }
 
 /**
@@ -260,7 +263,7 @@ export function isForwarded(messageElement: Element): boolean {
  * @returns true if deleted message
  */
 export function isDeleted(messageElement: Element): boolean {
-  return !!messageElement.querySelector('[title*="deleted" i]');
+  return !!messageElement.querySelector(DOMComponents.deletedMessage);
 }
 
 /**
@@ -273,17 +276,17 @@ export function extractMessageData(messageElement: Element): MessageData {
   const isOutgoing = dataId?.startsWith("true_") || false;
   const chatId = dataId ? extractChatId(dataId) : null;
 
-  const copyableText = messageElement.querySelector(".copyable-text");
+  const copyableText = messageElement.querySelector(DOMComponents.copyableText);
   const prePlainText = copyableText?.getAttribute("data-pre-plain-text") || "";
 
   // Try multiple selectors for content
   const contentSpan = messageElement.querySelector(
-    "span.selectable-text.copyable-text, .emoji.copyable-text"
+    DOMComponents.messageContent
   );
   const messageText = contentSpan?.textContent?.trim() || "";
 
   const timestampSpan = messageElement.querySelector(
-    ".x3nfvp2 .x1c4vz4f, .x3nfvp2 .x2lah0s"
+    DOMComponents.messageTimestamp
   );
   const timestamp = timestampSpan?.textContent || "";
 
@@ -328,7 +331,9 @@ export function extractMessageData(messageElement: Element): MessageData {
  * @returns Array of MessageData objects
  */
 export function getAllMessages(limit?: number): MessageData[] {
-  const messageElements = document.querySelectorAll("div._amjv[data-id]");
+  const messageElements = document.querySelectorAll(
+    DOMComponents.messageContainer
+  );
 
   const messages = Array.from(messageElements)
     .filter((el) => el.getAttribute("data-virtualized") === "false")
@@ -346,7 +351,7 @@ export function getAllMessages(limit?: number): MessageData[] {
  * @returns Chat ID string or null
  */
 export function getActiveChatId(): string | null {
-  const firstMessage = document.querySelector("div._amjv[data-id]");
+  const firstMessage = document.querySelector(DOMComponents.messageContainer);
   if (!firstMessage) return null;
 
   const dataId = firstMessage.getAttribute("data-id");
@@ -361,9 +366,7 @@ export function getActiveChatId(): string | null {
 export function observeNewMessages(
   callback: (message: MessageData) => void
 ): MutationObserver | null {
-  const chatContainer = document.querySelector(
-    '[data-scrolltracepolicy="wa.web.conversation.messages"]'
-  );
+  const chatContainer = document.querySelector(DOMComponents.chatContainer);
 
   if (!chatContainer) {
     console.warn("Chat container not found");
@@ -375,7 +378,7 @@ export function observeNewMessages(
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
           const element = node as Element;
-          if (element.matches("div._amjv[data-id]")) {
+          if (element.matches(DOMComponents.messageContainer)) {
             const messageData = extractMessageData(element);
             callback(messageData);
           }
@@ -400,23 +403,25 @@ export function injectAIButton(
   onClick: (e: Event, messageData: MessageData) => void
 ): HTMLButtonElement | null {
   const actionsContainer = messageElement.querySelector(
-    ".x78zum5.xbfrwjf.x8k05lb.xeq5yr9.x1n2onr6.xrr41r3.xqcrz7y"
+    DOMComponents.messageActionsContainer
   );
 
-  if (!actionsContainer || actionsContainer.querySelector(".ai-action-btn")) {
+  if (
+    !actionsContainer ||
+    actionsContainer.querySelector(`.${DOMComponents.aiActionButtonClass}`)
+  ) {
     return null; // Already injected or no container
   }
 
   const aiButton = document.createElement("button");
-  aiButton.className =
-    "ai-action-btn xjb2p0i x1ypdohk xjbqb8w x972fbf xcfux6l x1qhh985 xm0m39n xdj266r x11i5rnm xat24cr x1mh8g0r x1w3u9th x1t137rt x1o1ewxj x3x9cwd x1e5q0jg x13rtm0m x3nfvp2 x1q0g3np xexx8yu x4uap5 x18d9i69 xkhd6sd";
+  aiButton.className = `${DOMComponents.aiActionButtonClass} ${DOMComponents.messageActionButtonBase}`;
   aiButton.setAttribute("aria-label", "AI Actions");
   aiButton.setAttribute("type", "button");
   aiButton.style.cssText = "margin-right: 8px; cursor: pointer;";
 
   // Create icon (using simple text for now, can be replaced with SVG)
   aiButton.innerHTML = `
-    <span class="x1c4vz4f xs83m0k xdl72j9 x1g77sc7 x78zum5 xozqiw3 x1oa3qoh x12fk4p8 xeuugli x2lwn1j xozqiw3 x1oa3qoh x12fk4p8">
+    <span class="${DOMComponents.messageActionIconSpan}">
       <svg viewBox="0 0 24 24" height="20" width="20" fill="currentColor">
         <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
         <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="currentColor" fill="none"/>

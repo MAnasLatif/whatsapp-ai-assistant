@@ -16,6 +16,7 @@ import { MessageActionButton } from "./components/message-action-button";
 import { ActionMenu } from "./components/action-menu";
 import { ResultsDisplay } from "./components/results-display";
 import { injectShadowStyles } from "./styles";
+import { DOMComponents } from "@/utils/dom-components";
 
 export interface App {
   updateTheme: (theme: WhatsAppTheme) => void;
@@ -36,7 +37,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
   // Create shadow root container for isolated styles
   const shadowHost = document.createElement("div");
-  shadowHost.id = "wa-ai-assistant-root";
+  shadowHost.id = DOMComponents.aiAssistantRoot.substring(1); // Remove # prefix
   shadowHost.style.cssText =
     "position: fixed; top: 0; left: 0; z-index: 99999; pointer-events: none;";
   document.body.appendChild(shadowHost);
@@ -48,7 +49,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
   // Create container inside shadow DOM
   const container = document.createElement("div");
-  container.id = "wa-ai-container";
+  container.id = DOMComponents.aiContainer.substring(1); // Remove # prefix
   container.className = `wa-ai-theme-${currentTheme}`;
   container.style.cssText = "pointer-events: auto;";
   shadowRoot.appendChild(container);
@@ -76,15 +77,13 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     );
 
     // Check if already injected
-    if (document.querySelector(".wa-ai-settings-btn")) {
+    if (document.querySelector(DOMComponents.aiSettingsButton)) {
       console.log("[WhatsApp AI Assistant] Settings button already exists");
       return;
     }
 
     // Find the "New chat" button - this is our reference point
-    const newChatButton = document.querySelector(
-      ".x1okw0bk .x78zum5.x6s0dn4.x1afcbsf.x14ug900>div"
-    );
+    const newChatButton = document.querySelector(DOMComponents.newChatButton);
 
     if (!newChatButton) {
       console.log(
@@ -106,7 +105,8 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
     // Get the parent span container of the new chat button
     let newChatSpan =
-      newChatButton.closest("span.html-span") || newChatButton.closest("span");
+      newChatButton.closest(DOMComponents.htmlSpan) ||
+      newChatButton.closest("span");
 
     if (!newChatSpan) {
       console.warn(
@@ -156,7 +156,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
     // Get chat name from header
     const chatHeader = document.querySelector(
-      '[data-testid="conversation-info-header-chat-title"]'
+      DOMComponents.conversationInfoHeader
     );
     const chatName = chatHeader?.textContent || "";
     const isGroup = isGroupChat();
@@ -252,7 +252,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       });
 
       const div: HTMLDivElement = document.createElement("div");
-      div.className = "wa-ai-action-btn-container";
+      div.className = DOMComponents.actionBtnContainer.substring(1); // Remove . prefix
       div.appendChild(button.element);
 
       // Find the message actions container
@@ -260,12 +260,12 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       //     '[class*="x78zum5"][class*="xbfrwjf"]'
       //   );
       const actionsContainer = messageElement.querySelector(
-        ".focusable-list-item ._amk6._amlo"
+        DOMComponents.messageActionContainer
       );
 
       if (
         actionsContainer &&
-        !actionsContainer.querySelector(".wa-ai-action-btn")
+        !actionsContainer.querySelector(DOMComponents.aiActionButton)
       ) {
         actionsContainer.appendChild(div);
       }

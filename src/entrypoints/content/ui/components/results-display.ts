@@ -4,6 +4,7 @@
  */
 
 import type { WhatsAppTheme } from "@/utils/types";
+import { DOMComponents } from "@/utils/dom-components";
 
 export class ResultsDisplay {
   private container: HTMLElement;
@@ -154,7 +155,9 @@ export class ResultsDisplay {
   }
 
   private setupCloseButton(): void {
-    const closeBtn = this.resultElement?.querySelector(".wa-ai-close-btn");
+    const closeBtn = this.resultElement?.querySelector(
+      DOMComponents.settingsCloseBtn
+    );
     closeBtn?.addEventListener("click", () => this.hide());
   }
 
