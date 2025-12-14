@@ -104,29 +104,28 @@ export class GlobalSettingsPanel {
     statusDiv.innerHTML = `${Icons.loading} Testing connection...`;
 
     try {
-      const response = await fetch("https://api.openai.com/v1/models", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
+      // Send message to background script to validate API key
+      const response = await browser.runtime.sendMessage({
+        type: "VALIDATE_API_KEY",
+        payload: { apiKey },
       });
 
-      if (response.ok) {
+      if (response.success) {
         statusDiv.style.color = "#4caf50";
         statusDiv.innerHTML = `${Icons.check} API key is valid!`;
         setTimeout(() => {
           statusDiv.style.display = "none";
         }, 3000);
       } else {
-        const error = await response.json();
         statusDiv.style.color = "#f44336";
         statusDiv.innerHTML = `${Icons.error} Invalid API key: ${
-          error.error?.message || "Authentication failed"
+          response.error || "Authentication failed"
         }`;
       }
     } catch (error) {
       statusDiv.style.color = "#f44336";
-      statusDiv.innerHTML = `${Icons.error} Network error: Unable to connect to OpenAI`;
+      statusDiv.innerHTML = `${Icons.error} Network error: Unable to connect to background script`;
+      console.error("API key validation error:", error);
     } finally {
       testBtn.disabled = false;
       testBtn.innerHTML = `${Icons.check} Test`;
