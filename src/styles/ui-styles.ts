@@ -119,7 +119,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   background: transparent;
   cursor: pointer;
   border-radius: 50%;
-  color: var(--message-primary);
+  color: var(--bubble-meta-icon);
   transition: all 0.15s ease;
   margin-right: 4px;
 }
@@ -136,14 +136,13 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 /* Action Menu */
-.wa-ai-action-menu {
+wa-ai-action-menu {
   position: fixed;
-  background: ${colors.surface};
-  border: 1px solid ${colors.border};
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, ${theme === "dark" ? "0.3" : "0.15"});
+  background: var(--dropdown-background);
+  border-radius: 16px;
+  box-shadow: 0 2px 5px rgba(var(--shadow-rgb), .26), 0 2px 10px rgba(var(--shadow-rgb), .16);
   min-width: 180px;
-  padding: 8px 0;
+  padding: 10px;
   z-index: 10000;
   animation: wa-ai-fade-in 0.15s ease;
 }
@@ -153,7 +152,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  color: ${colors.text};
+  color: var(--WDS-content-deemphasized);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.15s;
@@ -161,12 +160,11 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   background: transparent;
   width: 100%;
   text-align: left;
+  border-radius: 8px;
 }
 
 .wa-ai-action-menu-item:hover {
-  background-color: ${
-    theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
-  };
+  background-color: var(--WDS-systems-chat-surface-composer);
 }
 
 .wa-ai-action-menu-item svg {
@@ -174,50 +172,38 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   height: 18px;
 }
 
-/* Chat Panel */
-.wa-ai-chat-overlay {
-  position: fixed;
+/* Chat Panel - Sidebar Style */
+.wa-ai-chat-panel {
+  position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, ${theme === "dark" ? "0.6" : "0.4"});
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  animation: wa-ai-fade-in 0.2s ease;
-}
-
-.wa-ai-chat-panel {
-  background: ${colors.surface};
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 85vh;
-  overflow: hidden;
+  left: 0;
+  background: var(--WDS-surface-default);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, ${theme === "dark" ? "0.4" : "0.2"});
-  animation: wa-ai-slide-up 0.25s ease;
+  z-index: 10001;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+  overflow: hidden;
+}
+
+.wa-ai-chat-panel.active {
+  transform: translateX(0);
 }
 
 .wa-ai-chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid ${colors.border};
+  gap: 16px;
+  padding: 16px;
+  padding-top: 0;
+  border-bottom: 1px solid #222d34;
+  flex-shrink: 0;
 }
 
-.wa-ai-chat-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: ${colors.text};
-  margin: 0;
-}
-
-.wa-ai-close-btn {
+.wa-ai-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,13 +215,32 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   border-radius: 50%;
   color: ${colors.textSecondary};
   transition: all 0.15s;
+  margin-left: auto;
 }
 
-.wa-ai-close-btn:hover {
+.wa-ai-back-btn:hover {
   background: ${
     theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"
   };
   color: ${colors.text};
+}
+
+.wa-ai-back-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.wa-ai-chat-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: ${colors.text};
+  margin: 0;
+}
+
+.wa-ai-chat-subtitle {
+  font-size: 13px;
+  color: ${colors.textSecondary};
+  margin: 4px 0 0 0;
 }
 
 .wa-ai-chat-tabs {
@@ -278,6 +283,9 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Form Elements */
@@ -391,6 +399,13 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.wa-ai-chat-content 
+.wa-ai-btn {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 .wa-ai-btn-primary {
@@ -544,27 +559,6 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   font-size: 12px;
   color: ${colors.textSecondary};
   margin-top: 4px;
-}
-
-/* Chat Info Banner */
-.wa-ai-chat-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: ${
-    theme === "dark" ? "rgba(0,168,132,0.15)" : "rgba(0,168,132,0.1)"
-  };
-  border-bottom: 1px solid ${colors.border};
-  font-size: 12px;
-  color: ${colors.textSecondary};
-}
-
-.wa-ai-chat-info svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  fill: ${colors.primary};
 }
 
 /* Info Banner */
@@ -818,6 +812,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   justify-content: center;
   padding: 40px 20px;
   text-align: center;
+  margin: auto;
 }
 
 .wa-ai-empty-state svg {
@@ -884,7 +879,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   padding: 4px;
   margin-top: 4px;
   border-radius: 100%;
-  color: ${theme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)"};
+  color: ${colors.textSecondary};
 }
 
 .wa-global-settings-btn:hover {
@@ -896,7 +891,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 .wa-global-settings-btn svg {
   width: 32px;
   height: 32px;
-  fill: ${theme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)"};
+  fill: ${colors.textSecondary};
 }
 
 .wa-global-settings-content {

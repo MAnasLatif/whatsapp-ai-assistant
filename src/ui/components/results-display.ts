@@ -151,7 +151,7 @@ export class ResultsDisplay {
 
   private setupCloseButton(): void {
     const closeBtn = this.resultElement?.querySelector(
-      DOMComponents.chatCloseBtn
+      DOMComponents.resultsCloseBtn
     );
     closeBtn?.addEventListener("click", () => this.hide());
   }

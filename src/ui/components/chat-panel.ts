@@ -25,10 +25,8 @@ import {
 type TabId = "summary" | "stories" | "settings";
 
 export class ChatPanel {
-  private container: HTMLElement;
-  private panelElement: HTMLElement | null = null;
+  private panel: HTMLElement | null = null;
   private theme: WhatsAppTheme;
-  private onClose: () => void;
   private activeTab: TabId = "summary";
   private chatContext: ChatContext | null = null;
   private chatId: string;
@@ -36,86 +34,42 @@ export class ChatPanel {
   private isGroup: boolean;
 
   constructor(
-    container: HTMLElement,
     theme: WhatsAppTheme,
     chatId: string,
     chatName: string = "",
-    isGroup: boolean = false,
-    onClose: () => void
+    isGroup: boolean = false
   ) {
-    this.container = container;
     this.theme = theme;
     this.chatId = chatId;
     this.chatName = chatName;
     this.isGroup = isGroup;
-    this.onClose = onClose;
-  }
-
-  async show(): Promise<void> {
-    // Load chat context
-    this.chatContext = await getChatContext(
-      this.chatId,
-      this.chatName,
-      this.isGroup
-    );
-
-    this.panelElement = this.createElement();
-    this.container.appendChild(this.panelElement);
-
-    // Prevent body scroll
-    document.body.style.overflow = "hidden";
-  }
-
-  hide(): void {
-    if (this.panelElement) {
-      this.panelElement.remove();
-      this.panelElement = null;
-    }
-    document.body.style.overflow = "";
-    this.onClose();
   }
 
   private createElement(): HTMLElement {
-    const overlay = document.createElement("div");
-    overlay.className = DOMComponents.chatOverlay.substring(1); // Remove . prefix
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) this.hide();
-    });
-
     const panel = document.createElement("div");
     panel.className = DOMComponents.chatPanel.substring(1); // Remove . prefix
+
     panel.innerHTML = `
-      <div class="wa-ai-chat-header">
-        <div>
-          <h2 class="wa-ai-chat-title">${
-            this.chatContext?.chatName || "Chat Details"
-          }</h2>
-          <p class="wa-ai-chat-subtitle">${
-            this.isGroup ? "Group Chat" : "Private Chat"
-          } • ${this.chatId.split("@")[0]}</p>
-        </div>
-        <button class="wa-ai-close-btn" aria-label="Close">
-          ${Icons.close}
-        </button>
-      </div>
-      <div class="wa-ai-chat-info">
-        ${Icons.info}
-        <span>For global AI settings, click the extension icon in toolbar</span>
-      </div>
+      <!-- Tabs -->
       <div class="wa-ai-chat-tabs">
         <button class="wa-ai-tab-btn active" data-tab="summary">Summary</button>
         <button class="wa-ai-tab-btn" data-tab="stories">Stories (${
           this.chatContext?.stories.length || 0
         })</button>
         <button class="wa-ai-tab-btn" data-tab="settings">Settings</button>
+        <button class="wa-ai-back-btn" aria-label="Close">
+          ${Icons.close}
+        </button>
       </div>
+
+      <!-- Content -->
       <div class="wa-ai-chat-content">
         ${this.renderTabContent("summary")}
       </div>
     `;
 
     // Setup event listeners
-    const closeBtn = panel.querySelector(DOMComponents.chatCloseBtn);
+    const closeBtn = panel.querySelector(".wa-ai-back-btn");
     closeBtn?.addEventListener("click", () => this.hide());
 
     const tabBtns = panel.querySelectorAll(DOMComponents.chatTabBtn);
@@ -129,8 +83,7 @@ export class ChatPanel {
     // Setup tab content listeners (for initial tab)
     this.setupTabListeners(panel);
 
-    overlay.appendChild(panel);
-    return overlay;
+    return panel;
   }
 
   private switchTab(tab: TabId, panel: HTMLElement): void {
@@ -318,6 +271,7 @@ export class ChatPanel {
     const settings = this.chatContext?.settings;
 
     return `
+    <div class="wa-ai-form-groups">
       <div class="wa-ai-form-group">
         <label class="wa-ai-label">Custom Prompt (Optional)</label>
         <textarea 
@@ -328,7 +282,6 @@ export class ChatPanel {
         >${settings?.customPrompt || ""}</textarea>
         <div class="wa-ai-input-description">Custom instructions will be used alongside global AI settings</div>
       </div>
-
       <div class="wa-ai-form-group">
         <label class="wa-ai-label">Preferred Tone</label>
         <select class="wa-ai-select" id="wa-ai-preferred-tone">
@@ -390,11 +343,11 @@ export class ChatPanel {
           <div class="wa-ai-switch-thumb"></div>
         </div>
       </div>
-
-      <div style="margin-top: 24px; display: flex; gap: 12px;">
-        <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-settings">Save Settings</button>
-        <button class="wa-ai-btn wa-ai-btn-danger" id="wa-ai-clear-chat-data">Clear Chat Data</button>
-      </div>
+    </div>
+    <div style="margin-top: 24px; display: flex; gap: 12px;">
+      <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-settings">Save Settings</button>
+      <button class="wa-ai-btn wa-ai-btn-danger" id="wa-ai-clear-chat-data">Clear Chat Data</button>
+    </div>
     `;
   }
 
@@ -560,7 +513,29 @@ export class ChatPanel {
     this.theme = theme;
   }
 
-  destroy(): void {
-    this.hide();
+  async show(): Promise<void> {
+    // Load chat context
+    this.chatContext = await getChatContext(
+      this.chatId,
+      this.chatName,
+      this.isGroup
+    );
+
+    this.panel = this.createElement();
+    document.querySelector(DOMComponents.side)?.appendChild(this.panel);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+      this.panel?.classList.add("active");
+    });
+  }
+
+  hide(): void {
+    this.panel?.classList.remove("active");
+
+    setTimeout(() => {
+      this.panel?.remove();
+      this.panel = null;
+    }, 300);
   }
 }

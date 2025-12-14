@@ -25,7 +25,6 @@ export interface App {
   updateTheme: (theme: WhatsAppTheme) => void;
   injectMessageButton: (messageElement: HTMLElement) => void;
   openChat: () => void;
-  closeChat: () => void;
   openGlobalSettings: () => void;
   destroy: () => void;
 }
@@ -64,17 +63,13 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   loadUserSettings();
 
   // Initialize components
-  const chatButton = new ChatButton(currentTheme, () => {
-    openChat();
-  });
+  const chatButton = new ChatButton(currentTheme, openChat);
 
-  const globalSettingsButton = new GlobalSettingsButton(() => {
-    openGlobalSettings();
-  });
+  const globalSettingsButton = new GlobalSettingsButton(openGlobalSettings);
 
   // Inject buttons into WhatsApp sidebar
-  injectChatButton(chatButton);
   injectGlobalSettingsButton(globalSettingsButton);
+  injectChatButton(chatButton);
 
   // Initialize action menu
   actionMenu = new ActionMenu(container, currentTheme, handleAIAction);
@@ -197,6 +192,17 @@ export function createApp(initialTheme: WhatsAppTheme): App {
    * Open chat panel
    */
   function openChat(): void {
+    if (chatPanel) {
+      chatPanel.hide();
+      chatPanel = null;
+      return;
+    }
+
+    if (globalSettingsPanel) {
+      globalSettingsPanel.hide();
+      globalSettingsPanel = null;
+    }
+
     // Get current active chat ID
     const chatId = getActiveChatId();
 
@@ -214,25 +220,9 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     const isGroup = isGroupChat();
 
     // Always create a new chat panel for the current chat
-    chatPanel = new ChatPanel(
-      container,
-      currentTheme,
-      chatId,
-      chatName,
-      isGroup,
-      () => {
-        closeChat();
-      }
-    );
+    chatPanel = new ChatPanel(currentTheme, chatId, chatName, isGroup);
 
     chatPanel.show();
-  }
-
-  /**
-   * Close chat panel
-   */
-  function closeChat(): void {
-    chatPanel?.hide();
   }
 
   /**
@@ -244,6 +234,11 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       globalSettingsPanel.hide();
       globalSettingsPanel = null;
       return;
+    }
+
+    if (chatPanel) {
+      chatPanel.hide();
+      chatPanel = null;
     }
 
     globalSettingsPanel = new GlobalSettingsPanel(userSettings, () => {
@@ -323,13 +318,9 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       });
 
       const div: HTMLDivElement = document.createElement("div");
-      div.className = DOMComponents.actionBtnContainer.substring(1); // Remove . prefix
+      div.className = DOMComponents.actionBtnContainer.substring(1);
       div.appendChild(button.element);
 
-      // Find the message actions container
-      //   const actionsContainer = messageElement.querySelector(
-      //     '[class*="x78zum5"][class*="xbfrwjf"]'
-      //   );
       const actionsContainer = messageElement.querySelector(
         DOMComponents.messageActionContainer
       );
@@ -343,12 +334,11 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     },
 
     openChat,
-    closeChat,
     openGlobalSettings,
 
     destroy(): void {
       chatButton.destroy();
-      chatPanel?.destroy();
+      chatPanel?.hide();
       actionMenu?.destroy();
       resultsDisplay?.destroy();
       shadowHost.remove();

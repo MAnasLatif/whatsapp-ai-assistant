@@ -76,9 +76,8 @@ export const DOMComponents = {
   globalSettingsPanel: ".wa-global-settings-panel",
 
   // Chat Panel
-  chatOverlay: ".wa-ai-chat-overlay",
   chatPanel: ".wa-ai-chat-panel",
-  chatCloseBtn: ".wa-ai-close-btn",
+  chatBackBtn: ".wa-ai-back-btn",
   chatTabBtn: ".wa-ai-tab-btn",
   chatContent: ".wa-ai-chat-content",
   chatSwitch: ".wa-ai-switch",
@@ -104,6 +103,7 @@ export const DOMComponents = {
   resultsHeader: ".wa-ai-results-header",
   resultsTitle: ".wa-ai-results-title",
   resultsContent: ".wa-ai-results-content",
+  resultsCloseBtn: ".wa-ai-close-btn",
 
   // Common UI elements
   actionBtnContainer: ".wa-ai-action-btn-container",
