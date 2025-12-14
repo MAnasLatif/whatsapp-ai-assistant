@@ -11,7 +11,6 @@ import { DEFAULT_SETTINGS } from "@/types";
 
 export class GlobalSettingsPanel {
   private panel: HTMLDivElement | null = null;
-  private overlay: HTMLDivElement | null = null;
   private settings: UserSettings;
   private originalSettings: UserSettings;
   private onClose: () => void;
@@ -497,9 +496,6 @@ export class GlobalSettingsPanel {
     allInputs.forEach((input) => {
       input.addEventListener("change", () => this.checkForChanges());
     });
-
-    // Overlay click to close
-    this.overlay?.addEventListener("click", () => this.hide());
   }
 
   private checkForChanges(): void {
@@ -664,11 +660,6 @@ export class GlobalSettingsPanel {
     // Load current settings first
     await this.loadSettings();
 
-    // Create overlay
-    // this.overlay = document.createElement("div");
-    // this.overlay.className = DOMComponents.globalSettingsOverlay.substring(1); // Remove . prefix
-    // document.body.appendChild(this.overlay);
-
     // Create and show panel
     this.panel = this.createPanel();
     document.querySelector(DOMComponents.side)?.appendChild(this.panel);
@@ -678,19 +669,15 @@ export class GlobalSettingsPanel {
 
     // Trigger animation
     requestAnimationFrame(() => {
-      this.overlay?.classList.add("active");
       this.panel?.classList.add("active");
     });
   }
 
   public hide(): void {
-    this.overlay?.classList.remove("active");
     this.panel?.classList.remove("active");
 
     setTimeout(() => {
-      this.overlay?.remove();
       this.panel?.remove();
-      this.overlay = null;
       this.panel = null;
       this.onClose();
     }, 300);
