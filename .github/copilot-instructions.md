@@ -296,6 +296,8 @@ npm run compile          # TypeScript type checking (no emit)
 4. **Don't bypass storage wrapper** - Use `src/utils/storage.ts` functions, not raw `browser.storage`
 5. **Icons must be from svgrepo.com** - Centralize in `src/utils/icons.ts`
 6. **Theme awareness required** - All injected UI must support light/dark themes dynamically
+7. **After Complete code review, run `npm run compile` to check for TypeScript errors**
+8. **Always test UI changes in both light and dark modes to ensure proper theming**
 
 ## Extension Manifest Configuration
 
