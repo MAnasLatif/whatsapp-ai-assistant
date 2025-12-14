@@ -136,7 +136,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 /* Action Menu */
-wa-ai-action-menu {
+.wa-ai-action-menu {
   position: fixed;
   background: var(--dropdown-background);
   border-radius: 16px;

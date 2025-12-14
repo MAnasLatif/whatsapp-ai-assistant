@@ -64,6 +64,14 @@ export class ChatButton {
     // Theme updates handled by CSS
   }
 
+  show(): void {
+    this.element.style.display = "";
+  }
+
+  hide(): void {
+    this.element.style.display = "none";
+  }
+
   destroy(): void {
     this.element.removeEventListener("click", this.handleClick);
     this.element.remove();

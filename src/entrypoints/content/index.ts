@@ -53,6 +53,9 @@ export default defineContentScript({
       // Set up message hover button injection
       setupMessageHoverObserver();
 
+      // Set up chat selection observer
+      setupChatSelectionObserver();
+
       // Set up message listener for background script
       setupMessageListener();
 
@@ -143,6 +146,37 @@ function handleMessageHover(event: Event): void {
   ) {
     app?.injectMessageButton(messageElement as HTMLElement);
   }
+}
+
+/**
+ * Set up observer to detect when chat selection changes
+ */
+function setupChatSelectionObserver(): void {
+  console.log("[WhatsApp AI Assistant] Setting up chat selection observer...");
+
+  // Initial check
+  app?.updateChatButtonVisibility();
+
+  // Observe changes in the conversation panel or main area
+  const observeTarget = document.querySelector(DOMComponents.app);
+  if (!observeTarget) {
+    console.warn(
+      "[WhatsApp AI Assistant] Cannot observe chat selection - app not found"
+    );
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    // Update button visibility when DOM changes (chat opened/closed)
+    app?.updateChatButtonVisibility();
+  });
+
+  observer.observe(observeTarget, {
+    childList: true,
+    subtree: true,
+  });
+
+  console.log("[WhatsApp AI Assistant] Chat selection observer set up");
 }
 
 /**

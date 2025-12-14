@@ -23,6 +23,7 @@ import { DOMComponents } from "@/utils/dom-components";
 
 export interface App {
   updateTheme: (theme: WhatsAppTheme) => void;
+  updateChatButtonVisibility: () => void;
   injectMessageButton: (messageElement: HTMLElement) => void;
   openChat: () => void;
   openGlobalSettings: () => void;
@@ -118,6 +119,18 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   }
 
   /**
+   * Update chat button visibility based on active chat state
+   */
+  function updateChatButtonVisibility(): void {
+    const chatId = getActiveChatId();
+    if (chatId) {
+      chatButton.show();
+    } else {
+      chatButton.hide();
+    }
+  }
+
+  /**
    * Inject chat button before the "New chat" button
    */
   function injectChatButton(button: ChatButton, retries = 0): void {
@@ -184,6 +197,9 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
     // Insert before the new chat button span
     buttonsContainer.insertBefore(buttonWrapper, newChatSpan);
+
+    // Hide button initially
+    button.hide();
 
     console.log("[WhatsApp AI Assistant] Chat button injected successfully");
   }
@@ -309,6 +325,8 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       actionMenu?.updateTheme(theme);
       resultsDisplay?.updateTheme(theme);
     },
+
+    updateChatButtonVisibility,
 
     injectMessageButton(messageElement: HTMLElement): void {
       const button = new MessageActionButton(currentTheme, (event) => {
