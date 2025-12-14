@@ -598,19 +598,125 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   line-height: 1.5;
 }
 
+/* Settings Header Subtitle */
+.wa-ai-settings-subtitle {
+  font-size: 13px;
+  color: ${colors.textSecondary};
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Summary Container */
+.wa-ai-summary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wa-ai-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.wa-ai-summary-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: ${colors.text};
+  margin: 0 0 4px 0;
+}
+
+.wa-ai-summary-meta {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+}
+
+.wa-ai-summary-content {
+  padding: 16px;
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : colors.background
+  };
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  line-height: 1.6;
+  color: ${colors.text};
+}
+
+.wa-ai-summary-section {
+  margin-top: 16px;
+}
+
+.wa-ai-summary-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: ${colors.text};
+  margin: 0 0 8px 0;
+}
+
+.wa-ai-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wa-ai-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: ${
+    theme === "dark" ? "rgba(0,168,132,0.15)" : "rgba(0,168,132,0.1)"
+  };
+  color: ${colors.primary};
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Textarea */
+.wa-ai-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid ${colors.border};
+  border-radius: 6px;
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : colors.background
+  };
+  color: ${colors.text};
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.15s;
+}
+
+.wa-ai-textarea:focus {
+  outline: none;
+  border-color: ${colors.primary};
+}
+
+.wa-ai-textarea::placeholder {
+  color: ${colors.textSecondary};
+}
+
+.wa-ai-input-description {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+  margin-top: 6px;
+}
+
 /* Stories List */
 .wa-ai-stories-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .wa-ai-story-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
   background: ${
     theme === "dark" ? "rgba(255,255,255,0.05)" : colors.background
   };
@@ -626,15 +732,49 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   };
 }
 
+.wa-ai-story-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.wa-ai-story-status.active {
+  background: ${colors.success};
+  box-shadow: 0 0 0 2px ${
+    theme === "dark" ? "rgba(0,168,132,0.2)" : "rgba(0,168,132,0.15)"
+  };
+}
+
+.wa-ai-story-status.inactive {
+  background: ${colors.textSecondary};
+}
+
 .wa-ai-story-info {
   flex: 1;
+  min-width: 0;
 }
 
 .wa-ai-story-title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: ${colors.text};
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.wa-ai-story-summary {
+  font-size: 13px;
+  color: ${colors.text};
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.wa-ai-story-points {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+  line-height: 1.6;
+  margin-bottom: 8px;
 }
 
 .wa-ai-story-meta {

@@ -11,6 +11,7 @@ import {
   clearChatCache,
   getStories,
   performCacheCleanup,
+  saveChatSummary,
 } from "@/utils/storage";
 import type {
   ExtensionMessage,
@@ -116,6 +117,9 @@ async function handleMessage(
       return await generateReply(
         payload as { messageData: MessageData; chatId: string }
       );
+
+    case "GENERATE_SUMMARY":
+      return await generateChatSummary(payload as { chatId: string });
 
     default:
       return { success: false, error: `Unknown message type: ${type}` };
@@ -472,6 +476,104 @@ Guidelines:
       };
     }
   } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+/**
+ * Generate chat summary from messages
+ */
+async function generateChatSummary(payload: {
+  chatId: string;
+}): Promise<ExtensionResponse> {
+  const settings = await getSettings();
+
+  if (!settings.ai.apiKey) {
+    return { success: false, error: "API key not configured" };
+  }
+
+  try {
+    // Get messages from the active tab
+    const [tab] = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (!tab.id) {
+      return { success: false, error: "No active tab found" };
+    }
+
+    // Inject script to get messages
+    const result = await browser.tabs.sendMessage(tab.id, {
+      type: "GET_MESSAGES",
+      payload: { limit: settings.general.messageLimit },
+    });
+
+    if (!result || !result.messages || result.messages.length === 0) {
+      return { success: false, error: "No messages found in chat" };
+    }
+
+    const messages = result.messages;
+
+    // Create summary prompt
+    const systemPrompt = `You are a helpful assistant that creates concise summaries of WhatsApp conversations.
+
+Analyze the conversation and provide:
+1. A brief summary (2-3 sentences)
+2. Key topics discussed (max 5)
+3. List of participants (if group chat)
+
+Return ONLY a valid JSON object in this exact format:
+{
+  "summary": "brief summary text",
+  "keyTopics": ["topic1", "topic2"],
+  "participants": ["name1", "name2"]
+}`;
+
+    const conversationText = messages
+      .map((m: any) => `${m.sender}: ${m.content}`)
+      .join("\n");
+
+    const response = await callOpenAI(
+      {
+        model: settings.ai.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `Summarize this conversation:\n\n${conversationText}`,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      },
+      settings.ai.apiKey
+    );
+
+    const content = response.choices[0]?.message?.content || "{}";
+
+    try {
+      const summaryData = JSON.parse(content);
+
+      // Save summary to storage
+      await saveChatSummary({
+        chatId: payload.chatId,
+        summary: summaryData.summary || "No summary available",
+        keyTopics: summaryData.keyTopics || [],
+        participants: summaryData.participants || [],
+        messageCount: messages.length,
+        lastUpdated: Date.now(),
+      });
+
+      return { success: true, data: summaryData };
+    } catch (parseError) {
+      console.error("Failed to parse summary:", content);
+      return {
+        success: false,
+        error: "Failed to parse summary response",
+      };
+    }
+  } catch (error) {
+    console.error("Error generating summary:", error);
     return { success: false, error: (error as Error).message };
   }
 }

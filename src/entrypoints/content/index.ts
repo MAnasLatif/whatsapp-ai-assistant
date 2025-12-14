@@ -9,6 +9,7 @@ import {
   detectTheme,
   waitForElement,
   observeThemeChanges,
+  getAllMessages,
 } from "@/utils/whatsapp-dom";
 import type { WhatsAppTheme } from "@/utils/types";
 
@@ -50,6 +51,9 @@ export default defineContentScript({
 
       // Set up message hover button injection
       setupMessageHoverObserver();
+
+      // Set up message listener for background script
+      setupMessageListener();
 
       console.log("[WhatsApp AI Assistant] Initialization complete");
     } catch (error) {
@@ -135,4 +139,24 @@ function handleMessageHover(event: Event): void {
   if (messageElement && !messageElement.querySelector(".wa-ai-action-btn")) {
     app?.injectMessageButton(messageElement as HTMLElement);
   }
+}
+
+/**
+ * Set up message listener for background script requests
+ */
+function setupMessageListener(): void {
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "GET_MESSAGES") {
+      try {
+        const limit = message.payload?.limit || 20;
+        const messages = getAllMessages(limit);
+        sendResponse({ success: true, messages });
+      } catch (error) {
+        console.error("Error getting messages:", error);
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true; // Keep channel open for async response
+    }
+  });
+  console.log("[WhatsApp AI Assistant] Message listener set up");
 }

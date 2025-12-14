@@ -4,7 +4,12 @@
  */
 
 import type { WhatsAppTheme } from "@/utils/types";
-import { extractMessageData, type MessageData } from "@/utils/whatsapp-dom";
+import {
+  extractMessageData,
+  getActiveChatId,
+  isGroupChat,
+  type MessageData,
+} from "@/utils/whatsapp-dom";
 import { SettingsButton } from "./components/settings-button";
 import { SettingsPanel } from "./components/settings-panel";
 import { MessageActionButton } from "./components/message-action-button";
@@ -140,11 +145,34 @@ export function createApp(initialTheme: WhatsAppTheme): App {
    * Open settings panel
    */
   function openSettings(): void {
-    if (!settingsPanel) {
-      settingsPanel = new SettingsPanel(container, currentTheme, () => {
-        closeSettings();
-      });
+    // Get current active chat ID
+    const chatId = getActiveChatId();
+
+    if (!chatId) {
+      console.warn("[WhatsApp AI Assistant] No active chat found");
+      alert("Please open a chat to view its settings");
+      return;
     }
+
+    // Get chat name from header
+    const chatHeader = document.querySelector(
+      '[data-testid="conversation-info-header-chat-title"]'
+    );
+    const chatName = chatHeader?.textContent || "";
+    const isGroup = isGroupChat();
+
+    // Always create a new settings panel for the current chat
+    settingsPanel = new SettingsPanel(
+      container,
+      currentTheme,
+      chatId,
+      chatName,
+      isGroup,
+      () => {
+        closeSettings();
+      }
+    );
+
     settingsPanel.show();
   }
 

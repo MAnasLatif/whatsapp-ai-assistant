@@ -9,6 +9,9 @@ import type {
   CacheStatistics,
   ChatCache,
   StoryThread,
+  ChatContext,
+  ChatSettings,
+  ChatSummary,
   DEFAULT_SETTINGS,
 } from "./types";
 import { DEFAULT_SETTINGS as defaultSettings } from "./types";
@@ -18,6 +21,9 @@ const STORAGE_KEYS = {
   SETTINGS: "wa_ai_settings",
   CACHE_STATS: "wa_ai_cache_stats",
   CHAT_CACHE_PREFIX: "wa_ai_chat_",
+  CHAT_CONTEXT_PREFIX: "wa_ai_context_",
+  CHAT_SETTINGS_PREFIX: "wa_ai_chat_settings_",
+  CHAT_SUMMARY_PREFIX: "wa_ai_summary_",
 } as const;
 
 // ============================================
@@ -447,4 +453,111 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}
+
+// ============================================
+// Per-Chat Context Functions
+// ============================================
+
+/**
+ * Get per-chat settings
+ */
+export async function getChatSettings(chatId: string): Promise<ChatSettings> {
+  try {
+    const key = `${STORAGE_KEYS.CHAT_SETTINGS_PREFIX}${chatId}`;
+    const result = await browser.storage.local.get(key);
+    return (
+      result[key] || {
+        chatId,
+        autoAnalyze: true,
+      }
+    );
+  } catch (error) {
+    console.error(`Failed to load settings for chat ${chatId}:`, error);
+    return { chatId, autoAnalyze: true };
+  }
+}
+
+/**
+ * Save per-chat settings
+ */
+export async function saveChatSettings(settings: ChatSettings): Promise<void> {
+  try {
+    const key = `${STORAGE_KEYS.CHAT_SETTINGS_PREFIX}${settings.chatId}`;
+    await browser.storage.local.set({ [key]: settings });
+  } catch (error) {
+    console.error(
+      `Failed to save settings for chat ${settings.chatId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get chat summary
+ */
+export async function getChatSummary(
+  chatId: string
+): Promise<ChatSummary | null> {
+  try {
+    const key = `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${chatId}`;
+    const result = await browser.storage.local.get(key);
+    return result[key] || null;
+  } catch (error) {
+    console.error(`Failed to load summary for chat ${chatId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Save chat summary
+ */
+export async function saveChatSummary(summary: ChatSummary): Promise<void> {
+  try {
+    const key = `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${summary.chatId}`;
+    await browser.storage.local.set({ [key]: summary });
+  } catch (error) {
+    console.error(`Failed to save summary for chat ${summary.chatId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get complete chat context (settings, summary, stories)
+ */
+export async function getChatContext(
+  chatId: string,
+  chatName: string = "",
+  isGroup: boolean = false
+): Promise<ChatContext> {
+  const [settings, summary, cache] = await Promise.all([
+    getChatSettings(chatId),
+    getChatSummary(chatId),
+    getChatCache(chatId),
+  ]);
+
+  return {
+    chatId,
+    chatName: cache?.chatName || chatName,
+    isGroup: cache?.isGroup ?? isGroup,
+    settings,
+    summary,
+    stories: cache?.stories || [],
+    lastAccessed: Date.now(),
+  };
+}
+
+/**
+ * Clear all data for a specific chat
+ */
+export async function clearChatData(chatId: string): Promise<void> {
+  const keysToRemove = [
+    `${STORAGE_KEYS.CHAT_CACHE_PREFIX}${chatId}`,
+    `${STORAGE_KEYS.CHAT_SETTINGS_PREFIX}${chatId}`,
+    `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${chatId}`,
+  ];
+
+  await browser.storage.local.remove(keysToRemove);
+  await recalculateCacheStats();
 }
