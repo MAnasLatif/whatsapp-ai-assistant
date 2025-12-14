@@ -1,271 +1,312 @@
-# WhatsApp AI Assistant - Copilot Instructions
+# WhatsApp AI Assistant - AI Agent Instructions
 
 ## Project Overview
 
-Chrome extension built with **WXT + TypeScript** that enhances WhatsApp Web with AI-powered features (message analysis, translation, reply generation) via OpenAI APIs. See [docs/srs.md](../docs/srs.md) for complete requirements.
+A Chrome extension built with **WXT framework** that injects AI-powered features into WhatsApp Web. The extension uses vanilla TypeScript (no React/Vue) with class-based UI components that render into Shadow DOM for style isolation.
 
-## Architecture
+**Core Architecture**: Content script injects UI → Background worker handles OpenAI API → Chrome local storage for caching
 
-```
-src/
-├── entrypoints/          # Extension entry points
-│   ├── background.ts     # Service worker: OpenAI API calls, caching, message routing
-│   ├── content/          # Content scripts for DOM manipulation
-│   │   └── index.ts      # Main content script entry point
-│   └── popup/            # Extension popup
-│       └── main.ts       # Popup UI logic
-├── types/                # TypeScript type definitions (centralized)
-│   └── index.ts          # All interfaces, types, constants (345 lines)
-├── utils/                # Utility functions
-│   ├── dom-components.ts # Global DOM selectors (110+ selectors)
-│   ├── whatsapp-dom.ts   # WhatsApp DOM manipulation utilities
-│   ├── storage.ts        # Chrome storage wrapper
-│   ├── storage-debug.ts  # Storage debugging tools
-│   └── icons.ts          # Centralized SVG icons from svgrepo.com (25+ icons)
-├── ui/                   # UI components (global, reusable)
-│   ├── app.ts            # Main UI orchestrator
-│   └── components/       # Individual UI components (7 files)
-│       ├── chat-button.ts
-│       ├── chat-panel.ts
-│       ├── global-settings-button.ts
-│       ├── global-settings-panel.ts
-│       ├── action-menu.ts
-│       ├── message-action-button.ts
-│       └── results-display.ts
-└── styles/               # Style files
-    ├── ui-styles.ts      # Injected UI styles with theme support (876 lines)
-    └── popup-styles.ts   # Popup window styles (295 lines)
+## Critical WXT Framework Patterns
+
+### Entry Points Structure
+
+- `src/entrypoints/background.ts` - Service worker (API calls, message handling)
+- `src/entrypoints/content/index.ts` - Content script (DOM injection, UI orchestration)
+- `src/entrypoints/popup/` - Browser action popup
+
+### WXT APIs Used
+
+```typescript
+export default defineBackground(() => {
+  /* service worker logic */
+});
+export default defineContentScript({
+  matches: ["*://web.whatsapp.com/*"],
+  runAt: "document_idle",
+});
 ```
 
-**Data Flow:** User Interaction → Content Script → Background Worker → OpenAI API → UI Components → Shadow DOM
+### Path Aliases (via tsconfig.json)
 
-## Development Commands
+Always use these aliases:
+
+- `@/types` → `src/types/`
+- `@/utils` → `src/utils/`
+- `@/ui` → `src/ui/`
+- `@/styles` → `src/styles/`
+
+## Component Architecture Pattern
+
+### Class-Based UI Components (Not React)
+
+All UI components are vanilla TypeScript classes that create native DOM elements. Example pattern from `src/ui/components/chat-button.ts`:
+
+```typescript
+export class ChatButton {
+  public element: HTMLButtonElement;
+  private theme: WhatsAppTheme;
+
+  constructor(theme: WhatsAppTheme, onClick: () => void) {
+    this.element = this.createElement();
+  }
+
+  private createElement(): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.className = DOMComponents.aiChatButton; // Use centralized selectors
+    button.innerHTML = `...`; // Native HTML structure
+    return button;
+  }
+
+  updateTheme(theme: WhatsAppTheme): void {
+    /* ... */
+  }
+  destroy(): void {
+    this.element.remove();
+  }
+}
+```
+
+### Shadow DOM Isolation Strategy
+
+Main app (`src/ui/app.ts`) creates a shadow root to prevent style conflicts with WhatsApp:
+
+```typescript
+const shadowHost = document.createElement("div");
+const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+injectShadowStyles(shadowRoot, currentTheme); // Inject isolated CSS
+```
+
+**Important**: Buttons that mimic native WhatsApp UI (settings button, message actions) inject directly into WhatsApp's DOM, not shadow DOM.
+
+## WhatsApp Web Integration
+
+### DOM Selector Management
+
+**All WhatsApp selectors centralized in `src/utils/dom-components.ts` (110+ selectors)**. Never hardcode selectors elsewhere.
+
+```typescript
+import { DOMComponents } from "@/utils/dom-components";
+
+// WhatsApp core containers
+DOMComponents.app; // "#app"
+DOMComponents.conversationPanel; // '[data-testid="conversation-panel-messages"]'
+DOMComponents.messageContainer; // "div._amjv[data-id]"
+```
+
+### Injection Points
+
+1. **Global Settings Button** - Injected above WhatsApp's native settings button in sidebar header
+2. **Message Action Buttons** - Hover overlay on individual messages, positioned with WhatsApp's action container
+3. **Chat Panel** - Modal overlay rendered in shadow DOM
+
+### Theme Detection & Sync
+
+WhatsApp supports light/dark themes. Always use `detectTheme()` from `src/utils/whatsapp-dom.ts`:
+
+```typescript
+export function detectTheme(): WhatsAppTheme {
+  // Checks body classes, data-theme attribute, prefers-color-scheme
+  return isDark ? "dark" : "light";
+}
+```
+
+Listen for theme changes via `observeThemeChanges()` - critical for maintaining visual consistency.
+
+## Icon System
+
+**All SVG icons MUST come from https://svgrepo.com** and be centralized in `src/utils/icons.ts` (25+ icons). Never inline SVG icons in components.
+
+```typescript
+import { Icons } from "@/utils/icons";
+button.innerHTML = Icons.aiSparkle; // Pre-defined AI assistant icon
+```
+
+Available icon categories: AI actions (analyze, translate, explain, tone, reply), UI controls (close, settings, refresh), status indicators (success, error, loading).
+
+## Storage & Caching Architecture
+
+### Chrome Storage Wrapper Pattern
+
+`src/utils/storage.ts` provides typed storage functions. Never use `browser.storage.local` directly:
+
+```typescript
+import {
+  getSettings,
+  saveSettings,
+  getChatCache,
+  saveChatCache,
+} from "@/utils/storage";
+
+const settings = await getSettings(); // Returns UserSettings with defaults merged
+await saveSettings(updatedSettings);
+```
+
+### Cache Key Structure
+
+```typescript
+const STORAGE_KEYS = {
+  SETTINGS: "wa_ai_settings",
+  CACHE_STATS: "wa_ai_cache_stats",
+  CHAT_CACHE_PREFIX: "wa_ai_chat_", // + chatId
+  CHAT_CONTEXT_PREFIX: "wa_ai_context_", // + chatId
+  CHAT_SUMMARY_PREFIX: "wa_ai_summary_", // + chatId
+};
+```
+
+### Story Thread System
+
+Chat "stories" are AI-generated contextual narratives cached per chat. Each chat can have multiple story threads (`StoryThread[]`). See `src/types/index.ts` for `StoryThread` interface.
+
+## Type System
+
+### Core Types Location
+
+All TypeScript interfaces in `src/types/index.ts` (348 lines). Key types:
+
+- `UserSettings` - Nested structure: `ai`, `general`, `cache`, `privacy`
+- `MessageData` - Extracted WhatsApp message with metadata
+- `StoryThread` - AI-generated conversation context
+- `ExtensionMessage` / `ExtensionResponse` - Background ↔ content script communication
+
+### Default Values Pattern
+
+Always import and spread defaults:
+
+```typescript
+import { DEFAULT_SETTINGS } from "@/types";
+const settings = { ...DEFAULT_SETTINGS, ...userOverrides };
+```
+
+## Message Passing Protocol
+
+### Content ↔ Background Communication
+
+Use typed message structure from `src/types/index.ts`:
+
+```typescript
+const message: ExtensionMessage = {
+  type: "ANALYZE_MESSAGE",
+  payload: { messageData, chatId },
+};
+
+const response = (await browser.runtime.sendMessage(
+  message
+)) as ExtensionResponse;
+if (response.success) {
+  /* handle response.data */
+}
+```
+
+Available message types: `GET_SETTINGS`, `SAVE_SETTINGS`, `ANALYZE_MESSAGE`, `GENERATE_REPLY`, `TRANSLATE_TEXT`, `GET_CACHE_STATS`, `CLEAR_CACHE`, etc.
+
+## OpenAI Integration
+
+### Supported Models (GPT-5 Family Only)
+
+The extension exclusively uses GPT-5 models:
+
+- `gpt-5.2` - Latest flagship model with enhanced reasoning
+- `gpt-5` - Standard GPT-5 model
+- `gpt-5-mini` - Faster, cost-effective model
+- `gpt-5-nano` - Lightweight model for quick responses
+
+**Note**: Update `AIModel` type in `src/types/index.ts` to reflect only GPT-5 family models.
+
+### API Call Pattern (Background Worker Only)
+
+All OpenAI API calls happen in `src/entrypoints/background.ts`. Content scripts never call OpenAI directly.
+
+```typescript
+// Background worker handles retries, rate limiting, caching
+async function callOpenAI(
+  request: OpenAICompletionRequest
+): Promise<OpenAICompletionResponse> {
+  // Max 2 retries, exponential backoff
+  // Uses settings.ai.model (GPT-5 family) and settings.ai.apiKey
+  // Follows Chat Completions API: https://platform.openai.com/docs/guides/text
+}
+```
+
+### Chat Completions API Structure
+
+Follow the standard Chat Completions format (https://platform.openai.com/docs/guides/text):
+
+```typescript
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
+  },
+  body: JSON.stringify({
+    model: "gpt-5-mini", // or gpt-5, gpt-5.2, gpt-5-nano
+    messages: [
+      { role: "system", content: "System prompt..." },
+      { role: "user", content: "User message..." },
+    ],
+  }),
+});
+```
+
+### Response Migration
+
+Follow OpenAI's response format (https://platform.openai.com/docs/guides/migrate-to-responses):
+
+- Use `response.choices[0].message.content` for text responses
+- Handle `finish_reason` appropriately (`stop`, `length`, `content_filter`)
+- Implement proper error handling for rate limits and API errors
+
+### Vision & Whisper API Usage
+
+- **Images**: Extract blob via `extractImageBlob()` → convert to base64 → send to Vision API with GPT-5 model
+- **Voice**: Extract audio blob → convert to base64 → send to Whisper API
+
+Media processing results integrate into story threads via `saveChatSummary()`.
+
+## Development Workflow
+
+### Build & Run Commands
 
 ```bash
-npm dev              # Start dev server with HMR (Chrome)
-npm dev:firefox      # Start dev server (Firefox)
-npm build            # Production build
-npm compile          # TypeScript check (no emit)
+npm run dev              # Chrome dev mode with hot reload
+npm run dev:firefox      # Firefox dev mode
+npm run build            # Production build
+npm run compile          # TypeScript type checking (no emit)
 ```
 
-## WXT-Specific Patterns
+### Dev Mode Features
 
-### Entrypoint Definitions
+- Hot reload via WXT
+- Storage debug tools auto-imported in background.ts: `import("@/utils/storage-debug")`
+- Persistent browser profiles: `.wxt/chrome-data`, `.wxt/firefox-data`
 
-- Use `defineBackground()` for service workers - auto-imports from WXT
-- Use `defineContentScript({ matches, main })` for content scripts
+### Testing on WhatsApp Web
 
-### Content Script Targeting
+1. Run `npm run dev`
+2. Load extension from `.output/chrome-mv3`
+3. Navigate to https://web.whatsapp.com
+4. Verify AI settings button appears above WhatsApp settings
+5. Hover over messages to see AI action button
 
-```typescript
-// Current: targets Google (placeholder)
-export default defineContentScript({
-  matches: ['*://*.google.com/*'],
-  // Change to WhatsApp Web:
-  // matches: ['*://web.whatsapp.com/*'],
-```
+## Common Pitfalls
 
-### Path Aliases
+1. **Don't use React/Vue patterns** - This is vanilla TypeScript with class-based components
+2. **Never hardcode WhatsApp selectors** - Always use `DOMComponents` from `src/utils/dom-components.ts`
+3. **Respect Shadow DOM boundaries** - Modal components in shadow root, native integrations in main DOM
+4. **Don't bypass storage wrapper** - Use `src/utils/storage.ts` functions, not raw `browser.storage`
+5. **Icons must be from svgrepo.com** - Centralize in `src/utils/icons.ts`
+6. **Theme awareness required** - All injected UI must support light/dark themes dynamically
 
-- `@/` resolves to project root (configured in `.wxt/tsconfig.json`)
-- `@/types` → `src/types/` - All TypeScript type definitions
-- `@/utils` → `src/utils/` - Utility functions, DOM helpers, and centralized icons
-- `@/ui` → `src/ui/` - Global UI components
-- `@/styles` → `src/styles/` - Style files
-- `@/entrypoints` → `src/entrypoints/` - Extension entry points
+## Extension Manifest Configuration
 
-**Example:**
+Defined in `wxt.config.ts`:
 
-```typescript
-import type { UserSettings, MessageData } from "@/types";
-import { DOMComponents } from "@/utils/dom-components";
-import { Icons } from "@/utils/icons";
-import { ChatPanel } from "@/ui/components/chat-panel";
-import { injectStyles } from "@/styles/ui-styles";
-```
+- **Permissions**: `storage`, `activeTab`
+- **Host permissions**: `*://web.whatsapp.com/*`, `https://api.openai.com/*`
+- **Manifest V3** required
 
-## Key Implementation Patterns
+## References
 
-### Centralized Icons
-
-All SVG icons are centralized in `src/utils/icons.ts`. **Always use icons from svgrepo.com**:
-
-```typescript
-import { Icons } from "@/utils/icons";
-
-// Use icons directly
-const html = `<button>${Icons.close}</button>`;
-const icon = Icons.aiSparkle;
-
-// Available icons:
-// - AI: aiSparkle
-// - Actions: analyze, translate, explain, tone, reply
-// - UI Controls: close, info, empty, calendar, delete, story, refresh, loading, copy, check, error
-// - User: settings, user, group
-```
-
-**Benefits:**
-
-- Single source of truth for all icons (25+ icons)
-- All icons sourced from https://www.svgrepo.com
-- Consistent styling across the extension
-- Easy to update or add new icons
-- Reduces code duplication and bundle size
-
-### Centralized DOM Selectors
-
-All DOM selectors are defined in `src/utils/dom-components.ts`:
-
-```typescript
-import { DOMComponents } from "@/utils/dom-components";
-
-// Use centralized selectors
-const chatContainer = document.querySelector(
-  DOMComponents.WhatsApp.Chat.CHAT_CONTAINER
-);
-const messages = document.querySelectorAll(
-  DOMComponents.WhatsApp.Message.MESSAGE_WRAPPER
-);
-```
-
-**Benefits:**
-
-- Single source of truth for all selectors (110+ selectors)
-- Easy to update when WhatsApp changes DOM structure
-- Organized into categories (WhatsApp native vs Extension components)
-
-### Type System
-
-All type definitions are centralized in `src/types/index.ts`:
-
-```typescript
-// Import types from centralized location
-import type {
-  MessageData,
-  ChatContext,
-  UserSettings,
-  AIModel,
-  WhatsAppTheme,
-} from "@/types";
-
-// Access constants
-import { DEFAULT_SETTINGS, THEME_COLORS } from "@/types";
-```
-
-## Core Implementation Patterns
-
-### Message Passing (Background ↔ Content Script)
-
-```typescript
-// Content script: send message
-browser.runtime.sendMessage({ type: "ANALYZE", payload: messageData });
-
-// Background: listen
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "ANALYZE") {
-    /* handle */
-  }
-});
-```
-
-### Chrome Storage for Caching
-
-```typescript
-// Store per-chat summaries with chat ID as key
-await browser.storage.local.set({ [`chat_${chatId}`]: summaryData });
-```
-
-### DOM Injection & UI Components
-
-Content scripts inject UI components using Shadow DOM to isolate styles from WhatsApp's CSS:
-
-```typescript
-import { injectShadowStyles } from "@/styles/ui-styles";
-import { ChatPanel } from "@/ui/components/chat-panel";
-
-// Create component with Shadow DOM
-const container = document.createElement("div");
-const shadowRoot = container.attachShadow({ mode: "open" });
-
-// Inject styles into shadow root
-injectShadowStyles(shadowRoot, theme);
-
-// Add component content
-const panel = new ChatPanel(
-  container,
-  theme,
-  chatId,
-  chatName,
-  isGroup,
-  onClose
-);
-```
-
-**UI Component Pattern:**
-
-- All UI components are in `src/ui/components/`
-- Use Shadow DOM for style isolation (for components in shadow root)
-- Match WhatsApp's native theme (light/dark)
-- Import styles from `@/styles/ui-styles`
-- Global settings components inject directly into document body (not shadow DOM) for full-screen panels
-- Chat-specific components use shadow DOM for better isolation
-
-### Global Settings System
-
-The extension uses a two-tier settings approach:
-
-**Global Settings (via GlobalSettingsButton/Panel):**
-
-- Injected directly into WhatsApp sidebar (outside shadow DOM)
-- Full-screen slide-in panel from right
-- Handles: OpenAI config, default preferences, enabled features, cache, privacy
-- On save: reloads browser tab to apply changes
-- Stored in `browser.storage.local` as `userSettings`
-
-**Chat-Specific Settings (via ChatButton/Panel):**
-
-- Injected in shadow DOM for isolation
-- Per-chat configuration: summaries, stories, cache management
-- Accessed from chat view only
-- No page reload required
-
-```typescript
-// Global settings usage
-import { GlobalSettingsButton } from "@/ui/components/global-settings-button";
-import { GlobalSettingsPanel } from "@/ui/components/global-settings-panel";
-
-const globalBtn = new GlobalSettingsButton(() => {
-  const panel = new GlobalSettingsPanel(userSettings, onClose);
-  panel.show();
-});
-```
-
-## Conventions
-
-- **File naming:** `kebab-case` for files, `PascalCase` for classes/types
-- **State management:** Use native browser storage APIs and vanilla JavaScript patterns
-- **API keys:** Store in `browser.storage.local`, never commit to code
-- **Error handling:** Retry failed API calls up to 2 times (NFR-08)
-
-## Testing
-
-Run `pnpm compile` before committing to catch TypeScript errors. No test framework configured yet.
-
-## Documentation
-
-- **Do not create new docs or md files** unless explicitly requested
-- Update `docs/update.md` to maintain update history
-- If requirements change, update `docs/srs.md`
-- Technical reference consolidated in `docs/technical-reference.md`
-
-## Resources
-
-- [Technical Reference Guide](../docs/technical-reference.md) - Complete DOM, data models, and implementation patterns
-- [SRS Document](../docs/srs.md) - Software Requirements Specification
-
-- [WXT Documentation](https://wxt.dev)
-- [Chrome Extension APIs](https://developer.chrome.com/docs/extensions/reference/)
-- [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
-- [OpenAI Model documentation](https://platform.openai.com/docs/models)
-- [OpenAI Audio documentation](https://platform.openai.com/docs/guides/audio)
-- [OpenAI text guides](https://platform.openai.com/docs/guides/text)
+- SRS: `/docs/srs.md` - Complete functional requirements
+- Technical Reference: `/docs/technical-reference.md` - Detailed DOM patterns, 980 lines
+- WXT Docs: https://wxt.dev/api/config.html
