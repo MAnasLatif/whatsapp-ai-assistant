@@ -8,6 +8,7 @@ export const DOMComponents = {
   app: "#app",
   side: "#side",
   main: "#main",
+  mainMenu: "header.xq3y45c.xbyj736 > div > div > div",
 
   // ===== WhatsApp Chat Elements =====
   chatList: '[data-testid="chat-list"]',
@@ -68,6 +69,12 @@ export const DOMComponents = {
   messageActionContainer: ".focusable-list-item ._amk6._amlo",
 
   // ===== Extension Component Selectors =====
+  // Global Settings
+  globalSettingsWrapper: ".wa-global-settings-wrapper",
+  globalSettingsButton: ".wa-global-settings-btn",
+  globalSettingsOverlay: ".wa-global-settings-overlay",
+  globalSettingsPanel: ".wa-global-settings-panel",
+
   // Chat Panel
   chatOverlay: ".wa-ai-chat-overlay",
   chatPanel: ".wa-ai-chat-panel",

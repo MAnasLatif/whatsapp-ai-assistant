@@ -865,6 +865,418 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
     transform: rotate(360deg);
   }
 }
+
+/* ========================================
+   GLOBAL SETTINGS COMPONENTS
+   ======================================== */
+
+/* Global Settings Button in Sidebar */
+.wa-global-settings-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.wa-global-settings-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 4px;
+  margin-top: 4px;
+  border-radius: 100%;
+  color: ${theme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)"};
+}
+
+.wa-global-settings-btn:hover {
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
+  };
+}
+
+.wa-global-settings-btn svg {
+  width: 32px;
+  height: 32px;
+  fill: ${theme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)"};
+}
+
+.wa-global-settings-content {
+  flex: 1;
+  text-align: left;
+}
+
+.wa-global-settings-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin: 0;
+}
+
+.wa-global-settings-subtitle {
+  font-size: 13px;
+  color: ${colors.textSecondary};
+  margin: 0;
+}
+
+/* Global Settings Panel - Full Screen */
+.wa-global-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.wa-global-settings-overlay.active {
+  opacity: 1;
+}
+
+.wa-global-settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 500px;
+  max-width: 100%;
+  background: ${colors.background};
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.wa-global-settings-panel.active {
+  transform: translateX(0);
+}
+
+/* Settings Header */
+.wa-global-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: ${colors.headerBg};
+  border-bottom: 1px solid ${colors.border};
+  flex-shrink: 0;
+}
+
+.wa-global-settings-back {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: ${colors.text};
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.wa-global-settings-back:hover {
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"
+  };
+}
+
+.wa-global-settings-back svg {
+  width: 24px;
+  height: 24px;
+  stroke: ${colors.text};
+}
+
+.wa-global-settings-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin: 0;
+}
+
+/* Settings Content */
+.wa-global-settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.wa-settings-section {
+  margin-bottom: 32px;
+}
+
+.wa-settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.wa-settings-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: ${colors.text};
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid ${colors.border};
+}
+
+/* Settings Group */
+.wa-settings-group {
+  margin-bottom: 20px;
+}
+
+.wa-settings-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin-bottom: 8px;
+}
+
+.wa-settings-required {
+  color: #e53935;
+}
+
+.wa-settings-value {
+  margin-left: auto;
+  color: ${colors.primary};
+  font-weight: 600;
+}
+
+.wa-settings-input,
+.wa-settings-select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: ${colors.text};
+  background: ${theme === "dark" ? "rgba(255,255,255,0.05)" : "#fff"};
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.wa-settings-input:focus,
+.wa-settings-select:focus {
+  border-color: ${colors.primary};
+  box-shadow: 0 0 0 3px ${
+    theme === "dark" ? "rgba(0,168,132,0.1)" : "rgba(0,168,132,0.15)"
+  };
+}
+
+.wa-settings-range {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: ${theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.wa-settings-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: ${colors.primary};
+  cursor: pointer;
+  border: 2px solid ${colors.background};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wa-settings-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: ${colors.primary};
+  cursor: pointer;
+  border: 2px solid ${colors.background};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wa-settings-help {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+  margin: 6px 0 0 0;
+}
+
+.wa-settings-help a {
+  color: ${colors.primary};
+  text-decoration: none;
+}
+
+.wa-settings-help a:hover {
+  text-decoration: underline;
+}
+
+/* Toggle Switch */
+.wa-settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid ${colors.border};
+}
+
+.wa-settings-toggle:last-child {
+  border-bottom: none;
+}
+
+.wa-settings-toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: ${colors.text};
+  margin-bottom: 2px;
+}
+
+.wa-settings-toggle-help {
+  font-size: 12px;
+  color: ${colors.textSecondary};
+}
+
+.wa-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.wa-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.wa-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: ${
+    theme === "dark" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"
+  };
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.wa-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.wa-switch input:checked + .wa-switch-slider {
+  background-color: ${colors.primary};
+}
+
+.wa-switch input:checked + .wa-switch-slider:before {
+  transform: translateX(20px);
+}
+
+/* Settings Footer */
+.wa-global-settings-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  background: ${colors.headerBg};
+  border-top: 1px solid ${colors.border};
+  flex-shrink: 0;
+}
+
+.wa-settings-btn {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wa-settings-btn-primary {
+  background: ${colors.primary};
+  color: white;
+}
+
+.wa-settings-btn-primary:hover {
+  background: ${theme === "dark" ? "#00c9a1" : "#00a884"};
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.3);
+}
+
+.wa-settings-btn-secondary {
+  background: transparent;
+  color: ${colors.text};
+  border: 1px solid ${colors.border};
+}
+
+.wa-settings-btn-secondary:hover {
+  background: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
+  };
+}
+
+/* Toast Messages */
+.wa-settings-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: ${colors.background};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10002;
+  animation: wa-toast-slide-in 0.3s ease-out;
+}
+
+.wa-settings-toast svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.wa-settings-toast-success svg {
+  fill: #4caf50;
+}
+
+.wa-settings-toast-error svg {
+  fill: #f44336;
+}
+
+.wa-settings-toast span {
+  font-size: 14px;
+  color: ${colors.text};
+}
+
+@keyframes wa-toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 `;
 }
 

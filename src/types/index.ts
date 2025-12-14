@@ -309,6 +309,7 @@ export type WhatsAppTheme = "light" | "dark";
 export interface ThemeColors {
   background: string;
   surface: string;
+  headerBg: string;
   text: string;
   textSecondary: string;
   border: string;
@@ -322,6 +323,7 @@ export const THEME_COLORS: Record<WhatsAppTheme, ThemeColors> = {
   light: {
     background: "#f0f2f5",
     surface: "#ffffff",
+    headerBg: "#f0f2f5",
     text: "#111b21",
     textSecondary: "#667781",
     border: "#e9edef",
@@ -333,6 +335,7 @@ export const THEME_COLORS: Record<WhatsAppTheme, ThemeColors> = {
   dark: {
     background: "#111b21",
     surface: "#202c33",
+    headerBg: "#202c33",
     text: "#e9edef",
     textSecondary: "#8696a0",
     border: "#222d34",

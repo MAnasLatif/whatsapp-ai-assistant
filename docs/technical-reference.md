@@ -42,9 +42,11 @@ src/
 │   └── icons.ts           # Centralized SVG icons from svgrepo.com (25+ icons)
 ├── ui/                    # UI components (global)
 │   ├── app.ts             # Main UI orchestrator
-│   └── components/        # Individual UI components
+│   └── components/        # Individual UI components (7 files)
 │       ├── chat-button.ts
 │       ├── chat-panel.ts
+│       ├── global-settings-button.ts
+│       ├── global-settings-panel.ts
 │       ├── action-menu.ts
 │       ├── message-action-button.ts
 │       └── results-display.ts

@@ -24,9 +24,11 @@ src/
 │   └── icons.ts          # Centralized SVG icons from svgrepo.com (25+ icons)
 ├── ui/                   # UI components (global, reusable)
 │   ├── app.ts            # Main UI orchestrator
-│   └── components/       # Individual UI components (5 files)
+│   └── components/       # Individual UI components (7 files)
 │       ├── chat-button.ts
 │       ├── chat-panel.ts
+│       ├── global-settings-button.ts
+│       ├── global-settings-panel.ts
 │       ├── action-menu.ts
 │       ├── message-action-button.ts
 │       └── results-display.ts
@@ -179,7 +181,7 @@ Content scripts inject UI components using Shadow DOM to isolate styles from Wha
 
 ```typescript
 import { injectShadowStyles } from "@/styles/ui-styles";
-import { SettingsPanel } from "@/ui/components/settings-panel";
+import { ChatPanel } from "@/ui/components/chat-panel";
 
 // Create component with Shadow DOM
 const container = document.createElement("div");
@@ -189,15 +191,54 @@ const shadowRoot = container.attachShadow({ mode: "open" });
 injectShadowStyles(shadowRoot, theme);
 
 // Add component content
-const panel = new SettingsPanel(shadowRoot, settings);
+const panel = new ChatPanel(
+  container,
+  theme,
+  chatId,
+  chatName,
+  isGroup,
+  onClose
+);
 ```
 
 **UI Component Pattern:**
 
 - All UI components are in `src/ui/components/`
-- Use Shadow DOM for style isolation
+- Use Shadow DOM for style isolation (for components in shadow root)
 - Match WhatsApp's native theme (light/dark)
 - Import styles from `@/styles/ui-styles`
+- Global settings components inject directly into document body (not shadow DOM) for full-screen panels
+- Chat-specific components use shadow DOM for better isolation
+
+### Global Settings System
+
+The extension uses a two-tier settings approach:
+
+**Global Settings (via GlobalSettingsButton/Panel):**
+
+- Injected directly into WhatsApp sidebar (outside shadow DOM)
+- Full-screen slide-in panel from right
+- Handles: OpenAI config, default preferences, enabled features, cache, privacy
+- On save: reloads browser tab to apply changes
+- Stored in `browser.storage.local` as `userSettings`
+
+**Chat-Specific Settings (via ChatButton/Panel):**
+
+- Injected in shadow DOM for isolation
+- Per-chat configuration: summaries, stories, cache management
+- Accessed from chat view only
+- No page reload required
+
+```typescript
+// Global settings usage
+import { GlobalSettingsButton } from "@/ui/components/global-settings-button";
+import { GlobalSettingsPanel } from "@/ui/components/global-settings-panel";
+
+const globalBtn = new GlobalSettingsButton(() => {
+  const panel = new GlobalSettingsPanel(userSettings, onClose);
+  panel.show();
+});
+```
 
 ## Conventions
 

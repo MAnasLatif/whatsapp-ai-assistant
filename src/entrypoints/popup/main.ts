@@ -1,15 +1,10 @@
 /**
- * Extension Popup - Global Settings
- * Handles: API Key, AI Model, Features, Language Preferences
+ * Extension Popup - Status Display
+ * Shows extension status and links to settings in WhatsApp Web
  */
 
-import {
-  getSettings,
-  saveSettings,
-  formatBytes,
-  getCacheStats,
-} from "@/utils/storage";
-import type { UserSettings, AIModel, ResponseTone } from "@/types";
+import { getSettings, getCacheStats } from "@/utils/storage";
+import type { UserSettings } from "@/types";
 import { createPopupStyles } from "@/styles/popup-styles";
 
 class PopupApp {
@@ -27,371 +22,117 @@ class PopupApp {
     this.setupEventListeners();
   }
 
-  render() {
+  async render() {
     if (!this.settings) return;
+
+    const cacheStats = await getCacheStats();
+    const hasApiKey = !!(
+      this.settings.ai.apiKey && this.settings.ai.apiKey.length > 0
+    );
+    const isConfigured = hasApiKey;
 
     this.rootEl.innerHTML = `
       ${createPopupStyles()}
       <div class="popup-container">
         <header class="popup-header">
           <div class="header-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
           </div>
-          <h1 class="popup-title">AI Assistant Settings</h1>
+          <h1 class="popup-title">WhatsApp AI Assistant</h1>
         </header>
 
         <div class="popup-content">
-          ${this.renderAIConfigSection()}
-          ${this.renderGeneralSection()}
-          ${this.renderFeaturesSection()}
-          ${this.renderInfoSection()}
+          ${this.renderStatusSection(isConfigured, hasApiKey)}
+          ${this.renderStatsSection(cacheStats)}
+          ${this.renderInstructionsSection()}
         </div>
       </div>
     `;
   }
 
-  renderAIConfigSection(): string {
-    const { ai } = this.settings!;
-
-    const models: { value: AIModel; label: string }[] = [
-      { value: "gpt-4o", label: "GPT-4o (Most capable)" },
-      { value: "gpt-4o-mini", label: "GPT-4o Mini (Fast & efficient)" },
-      { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
-      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (Fastest)" },
-    ];
-
-    const tones: { value: ResponseTone; label: string }[] = [
-      { value: "neutral", label: "Neutral" },
-      { value: "friendly", label: "Friendly" },
-      { value: "professional", label: "Professional" },
-      { value: "casual", label: "Casual" },
-    ];
+  renderStatusSection(isConfigured: boolean, hasApiKey: boolean): string {
+    const statusClass = isConfigured ? "status-active" : "status-inactive";
+    const statusText = isConfigured ? "Active" : "Not Configured";
+    const statusIcon = isConfigured ? "✓" : "⚠";
 
     return `
       <section class="popup-section">
-        <h2 class="section-title">AI Configuration</h2>
-        
-        <div class="form-group">
-          <label class="form-label" for="api-key">OpenAI API Key</label>
-          <input 
-            type="password" 
-            class="form-input" 
-            id="api-key"
-            placeholder="sk-..."
-            value="${ai.apiKey}"
-          />
-          <div class="form-hint">
-            <button class="btn-link" id="validate-key">Validate Key</button>
-            <span id="key-status"></span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="ai-model">AI Model</label>
-          <select class="form-select" id="ai-model">
-            ${models
-              .map(
-                (m) =>
-                  `<option value="${m.value}" ${
-                    ai.model === m.value ? "selected" : ""
-                  }>${m.label}</option>`
-              )
-              .join("")}
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="response-tone">Default Response Tone</label>
-          <select class="form-select" id="response-tone">
-            ${tones
-              .map(
-                (t) =>
-                  `<option value="${t.value}" ${
-                    ai.defaultTone === t.value ? "selected" : ""
-                  }>${t.label}</option>`
-              )
-              .join("")}
-          </select>
-        </div>
-      </section>
-    `;
-  }
-
-  renderGeneralSection(): string {
-    const { general } = this.settings!;
-
-    return `
-      <section class="popup-section">
-        <h2 class="section-title">General</h2>
-        
-        <div class="form-group">
-          <label class="form-label" for="output-language">Output Language</label>
-          <select class="form-select" id="output-language">
-            <option value="en" ${
-              general.outputLanguage === "en" ? "selected" : ""
-            }>English</option>
-            <option value="es" ${
-              general.outputLanguage === "es" ? "selected" : ""
-            }>Spanish</option>
-            <option value="fr" ${
-              general.outputLanguage === "fr" ? "selected" : ""
-            }>French</option>
-            <option value="de" ${
-              general.outputLanguage === "de" ? "selected" : ""
-            }>German</option>
-            <option value="it" ${
-              general.outputLanguage === "it" ? "selected" : ""
-            }>Italian</option>
-            <option value="pt" ${
-              general.outputLanguage === "pt" ? "selected" : ""
-            }>Portuguese</option>
-            <option value="ru" ${
-              general.outputLanguage === "ru" ? "selected" : ""
-            }>Russian</option>
-            <option value="zh" ${
-              general.outputLanguage === "zh" ? "selected" : ""
-            }>Chinese</option>
-            <option value="ja" ${
-              general.outputLanguage === "ja" ? "selected" : ""
-            }>Japanese</option>
-            <option value="ko" ${
-              general.outputLanguage === "ko" ? "selected" : ""
-            }>Korean</option>
-            <option value="ar" ${
-              general.outputLanguage === "ar" ? "selected" : ""
-            }>Arabic</option>
-            <option value="hi" ${
-              general.outputLanguage === "hi" ? "selected" : ""
-            }>Hindi</option>
-            <option value="ur" ${
-              general.outputLanguage === "ur" ? "selected" : ""
-            }>Urdu</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="message-limit">Messages to Analyze (5-50)</label>
-          <input 
-            type="number" 
-            class="form-input" 
-            id="message-limit"
-            min="5" 
-            max="50" 
-            value="${general.messageLimit}"
-          />
-        </div>
-
-        <div class="toggle-item">
-          <div class="toggle-content">
-            <div class="toggle-label">Enable Hover Button</div>
-            <div class="toggle-description">Show AI action button when hovering over messages</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="enable-hover" ${
-              general.enableHoverButton ? "checked" : ""
-            }>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </section>
-    `;
-  }
-
-  renderFeaturesSection(): string {
-    const { ai } = this.settings!;
-
-    const features = [
-      {
-        key: "analyze",
-        label: "Analyze Messages",
-        description: "AI analysis of message content",
-      },
-      {
-        key: "translate",
-        label: "Translation",
-        description: "Translate messages to any language",
-      },
-      {
-        key: "explainContext",
-        label: "Explain Context",
-        description: "Get context explanation for messages",
-      },
-      {
-        key: "detectTone",
-        label: "Tone Detection",
-        description: "Detect emotional tone in messages",
-      },
-      {
-        key: "generateReply",
-        label: "Reply Generation",
-        description: "Generate contextual replies",
-      },
-      {
-        key: "smartSuggestions",
-        label: "Smart Suggestions",
-        description: "Get conversation improvement suggestions",
-      },
-    ];
-
-    return `
-      <section class="popup-section">
-        <h2 class="section-title">Enabled Features</h2>
-        
-        ${features
-          .map(
-            (f) => `
-          <div class="toggle-item">
-            <div class="toggle-content">
-              <div class="toggle-label">${f.label}</div>
-              <div class="toggle-description">${f.description}</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" data-feature="${f.key}" ${
-              ai.enabledFeatures[f.key as keyof typeof ai.enabledFeatures]
-                ? "checked"
+        <div class="status-card ${statusClass}">
+          <div class="status-icon">${statusIcon}</div>
+          <div class="status-content">
+            <h2 class="status-title">Extension Status</h2>
+            <p class="status-text">${statusText}</p>
+            ${
+              !hasApiKey
+                ? '<p class="status-warning">OpenAI API key not configured</p>'
                 : ""
-            }>
-              <span class="toggle-slider"></span>
-            </label>
+            }
           </div>
-        `
-          )
-          .join("")}
+        </div>
       </section>
     `;
   }
 
-  renderInfoSection(): string {
+  renderStatsSection(stats: any): string {
     return `
       <section class="popup-section">
-        <div class="info-box">
-          <div class="info-icon">ℹ️</div>
-          <div class="info-content">
-            <p><strong>Chat-specific settings</strong> (cache management, story threads) are available in the AI settings panel within WhatsApp Web.</p>
+        <h2 class="section-title">Quick Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">${stats?.totalChats || 0}</div>
+            <div class="stat-label">Cached Chats</div>
           </div>
+          <div class="stat-item">
+            <div class="stat-value">${stats?.totalStories || 0}</div>
+            <div class="stat-label">Story Threads</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${this.formatSize(
+              stats?.totalSize || 0
+            )}</div>
+            <div class="stat-label">Cache Size</div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  renderInstructionsSection(): string {
+    return `
+      <section class="popup-section">
+        <h2 class="section-title">How to Use</h2>
+        <div class="instructions">
+          <ol class="instructions-list">
+            <li>Open <strong>WhatsApp Web</strong></li>
+            <li>Look for the <strong>"AI Assistant"</strong> button at the top of the sidebar</li>
+            <li>Click it to configure your <strong>OpenAI API key</strong> and preferences</li>
+            <li>Once configured, use AI features on any chat!</li>
+          </ol>
+        </div>
+
+        <div class="info-box">
+          <p><strong>Note:</strong> All settings are configured within WhatsApp Web interface for better integration.</p>
         </div>
       </section>
 
       <div class="popup-footer">
-        <button class="btn-primary" id="save-settings">Save Changes</button>
+        <a href="https://web.whatsapp.com" target="_blank" class="btn-primary">Open WhatsApp Web</a>
       </div>
     `;
   }
 
+  formatSize(bytes: number): string {
+    if (bytes === 0) return "0 KB";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  }
+
   setupEventListeners() {
-    // Save button
-    const saveBtn = this.rootEl.querySelector("#save-settings");
-    saveBtn?.addEventListener("click", () => this.saveSettings());
-
-    // Validate API key
-    const validateBtn = this.rootEl.querySelector("#validate-key");
-    validateBtn?.addEventListener("click", () => this.validateAPIKey());
-  }
-
-  async saveSettings() {
-    if (!this.settings) return;
-
-    // API Configuration
-    const apiKey =
-      (this.rootEl.querySelector("#api-key") as HTMLInputElement)?.value || "";
-    const model = (this.rootEl.querySelector("#ai-model") as HTMLSelectElement)
-      ?.value as AIModel;
-    const defaultTone = (
-      this.rootEl.querySelector("#response-tone") as HTMLSelectElement
-    )?.value as ResponseTone;
-
-    // General Settings
-    const outputLanguage = (
-      this.rootEl.querySelector("#output-language") as HTMLSelectElement
-    )?.value;
-    const messageLimit = parseInt(
-      (this.rootEl.querySelector("#message-limit") as HTMLInputElement)
-        ?.value || "20"
-    );
-    const enableHoverButton = (
-      this.rootEl.querySelector("#enable-hover") as HTMLInputElement
-    )?.checked;
-
-    // Feature Flags
-    const features = { ...this.settings.ai.enabledFeatures };
-    this.rootEl.querySelectorAll("[data-feature]").forEach((toggle) => {
-      const feature = (toggle as HTMLInputElement).dataset
-        .feature as keyof typeof features;
-      features[feature] = (toggle as HTMLInputElement).checked;
-    });
-
-    // Update settings
-    this.settings.ai = {
-      apiKey,
-      model,
-      defaultTone,
-      enabledFeatures: features,
-    };
-
-    this.settings.general = {
-      ...this.settings.general,
-      outputLanguage,
-      messageLimit: Math.min(50, Math.max(5, messageLimit)),
-      enableHoverButton,
-    };
-
-    await saveSettings(this.settings);
-    this.showSaveSuccess();
-  }
-
-  async validateAPIKey() {
-    const apiKey =
-      (this.rootEl.querySelector("#api-key") as HTMLInputElement)?.value || "";
-    const statusEl = this.rootEl.querySelector("#key-status");
-
-    if (!apiKey) {
-      if (statusEl)
-        statusEl.innerHTML =
-          '<span class="status-error">Please enter an API key</span>';
-      return;
-    }
-
-    if (statusEl)
-      statusEl.innerHTML = '<span class="status-info">Validating...</span>';
-
-    try {
-      const response = await browser.runtime.sendMessage({
-        type: "VALIDATE_API_KEY",
-        payload: { apiKey },
-      });
-
-      if (response.success) {
-        if (statusEl)
-          statusEl.innerHTML =
-            '<span class="status-success">✓ Valid API key</span>';
-      } else {
-        if (statusEl)
-          statusEl.innerHTML = `<span class="status-error">✗ ${
-            response.error || "Invalid key"
-          }</span>`;
-      }
-    } catch (error) {
-      if (statusEl)
-        statusEl.innerHTML =
-          '<span class="status-error">✗ Validation failed</span>';
-    }
-  }
-
-  showSaveSuccess() {
-    const btn = this.rootEl.querySelector(
-      "#save-settings"
-    ) as HTMLButtonElement;
-    if (btn) {
-      const originalText = btn.textContent;
-      btn.textContent = "✓ Saved!";
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.disabled = false;
-      }, 1500);
-    }
+    // No action buttons needed in status-only popup
   }
 }
 

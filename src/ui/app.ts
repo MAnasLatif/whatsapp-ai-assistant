@@ -3,7 +3,8 @@
  * Manages UI components injected into WhatsApp Web
  */
 
-import type { WhatsAppTheme } from "@/types";
+import type { WhatsAppTheme, UserSettings } from "@/types";
+import { DEFAULT_SETTINGS } from "@/types";
 import {
   extractMessageData,
   getActiveChatId,
@@ -12,6 +13,8 @@ import {
 } from "@/utils/whatsapp-dom";
 import { ChatButton } from "./components/chat-button";
 import { ChatPanel } from "./components/chat-panel";
+import { GlobalSettingsButton } from "./components/global-settings-button";
+import { GlobalSettingsPanel } from "./components/global-settings-panel";
 import { MessageActionButton } from "./components/message-action-button";
 import { ActionMenu } from "./components/action-menu";
 import { ResultsDisplay } from "./components/results-display";
@@ -23,6 +26,7 @@ export interface App {
   injectMessageButton: (messageElement: HTMLElement) => void;
   openChat: () => void;
   closeChat: () => void;
+  openGlobalSettings: () => void;
   destroy: () => void;
 }
 
@@ -32,8 +36,10 @@ export interface App {
 export function createApp(initialTheme: WhatsAppTheme): App {
   let currentTheme = initialTheme;
   let chatPanel: ChatPanel | null = null;
+  let globalSettingsPanel: GlobalSettingsPanel | null = null;
   let actionMenu: ActionMenu | null = null;
   let resultsDisplay: ResultsDisplay | null = null;
+  let userSettings: UserSettings = DEFAULT_SETTINGS;
 
   // Create shadow root container for isolated styles
   const shadowHost = document.createElement("div");
@@ -54,19 +60,67 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   container.style.cssText = "pointer-events: auto;";
   shadowRoot.appendChild(container);
 
+  // Load user settings
+  loadUserSettings();
+
   // Initialize components
   const chatButton = new ChatButton(currentTheme, () => {
     openChat();
   });
 
-  // Inject chat button into WhatsApp sidebar
+  const globalSettingsButton = new GlobalSettingsButton(() => {
+    openGlobalSettings();
+  });
+
+  // Inject buttons into WhatsApp sidebar
   injectChatButton(chatButton);
+  injectGlobalSettingsButton(globalSettingsButton);
 
   // Initialize action menu
   actionMenu = new ActionMenu(container, currentTheme, handleAIAction);
 
   // Initialize results display
   resultsDisplay = new ResultsDisplay(container, currentTheme);
+
+  /**
+   * Load user settings from storage
+   */
+  async function loadUserSettings(): Promise<void> {
+    try {
+      const result = await browser.storage.local.get("userSettings");
+      if (result.userSettings) {
+        userSettings = { ...DEFAULT_SETTINGS, ...result.userSettings };
+        console.log("[WhatsApp AI Assistant] Settings loaded:", userSettings);
+      }
+    } catch (error) {
+      console.error("[WhatsApp AI Assistant] Failed to load settings:", error);
+    }
+  }
+
+  /**
+   * Inject global settings button below Meta AI or in sidebar
+   */
+  function injectGlobalSettingsButton(
+    button: GlobalSettingsButton,
+    retries = 0
+  ): void {
+    // Check if already injected
+    if (document.querySelector(DOMComponents.globalSettingsWrapper)) {
+      return;
+    }
+
+    // Find the side panel (#side) which contains the chat list and top buttons
+    const mainMenu = document.querySelector(DOMComponents.mainMenu);
+
+    if (!mainMenu) {
+      if (retries < 10) {
+        setTimeout(() => injectGlobalSettingsButton(button, retries + 1), 2000);
+      }
+      return;
+    }
+
+    mainMenu.appendChild(button.render());
+  }
 
   /**
    * Inject chat button before the "New chat" button
@@ -182,6 +236,20 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   }
 
   /**
+   * Open global settings panel
+   */
+  function openGlobalSettings(): void {
+    console.log("[WhatsApp AI Assistant] Opening global settings");
+
+    globalSettingsPanel = new GlobalSettingsPanel(userSettings, () => {
+      // Callback when settings panel is closed
+      loadUserSettings(); // Reload settings in case they were changed
+    });
+
+    globalSettingsPanel.show();
+  }
+
+  /**
    * Handle AI action selection
    */
   async function handleAIAction(
@@ -271,6 +339,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
 
     openChat,
     closeChat,
+    openGlobalSettings,
 
     destroy(): void {
       chatButton.destroy();
