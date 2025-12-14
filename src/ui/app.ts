@@ -239,7 +239,12 @@ export function createApp(initialTheme: WhatsAppTheme): App {
    * Open global settings panel
    */
   function openGlobalSettings(): void {
-    console.log("[WhatsApp AI Assistant] Opening global settings");
+    // check if setting panel is open the close it
+    if (globalSettingsPanel) {
+      globalSettingsPanel.hide();
+      globalSettingsPanel = null;
+      return;
+    }
 
     globalSettingsPanel = new GlobalSettingsPanel(userSettings, () => {
       // Callback when settings panel is closed

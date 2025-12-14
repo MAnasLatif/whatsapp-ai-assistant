@@ -924,29 +924,29 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--WDS-surface-default);
   z-index: 10000;
   opacity: 0;
   transition: opacity 0.3s;
+  pointer-events: none;
 }
 
 .wa-global-settings-overlay.active {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .wa-global-settings-panel {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 500px;
-  max-width: 100%;
-  background: ${colors.background};
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  left: 0;
+  background: var(--WDS-surface-default);
   z-index: 10001;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(-100%);
   transition: transform 0.3s ease-out;
 }
 
@@ -958,10 +958,10 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 .wa-global-settings-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px;
-  background: ${colors.headerBg};
-  border-bottom: 1px solid ${colors.border};
+  gap: 10px;
+  justify-content: space-between;
+  padding: 18px;
+  padding-top: 0;
   flex-shrink: 0;
 }
 
@@ -1025,6 +1025,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 /* Settings Group */
 .wa-settings-group {
   margin-bottom: 20px;
+  position: relative;
 }
 
 .wa-settings-label {
@@ -1046,6 +1047,10 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   color: ${colors.primary};
   font-weight: 600;
 }
+.wa-settings-input-container {
+  position: relative;
+  height: 40px;
+}
 
 .wa-settings-input,
 .wa-settings-select {
@@ -1060,12 +1065,16 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   transition: all 0.2s;
 }
 
+.wa-settings-input {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: auto;
+}
+
 .wa-settings-input:focus,
 .wa-settings-select:focus {
   border-color: ${colors.primary};
-  box-shadow: 0 0 0 3px ${
-    theme === "dark" ? "rgba(0,168,132,0.1)" : "rgba(0,168,132,0.15)"
-  };
 }
 
 .wa-settings-range {
@@ -1193,8 +1202,6 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   display: flex;
   gap: 12px;
   padding: 16px 24px;
-  background: ${colors.headerBg};
-  border-top: 1px solid ${colors.border};
   flex-shrink: 0;
 }
 

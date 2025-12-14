@@ -13,10 +13,12 @@ export class GlobalSettingsPanel {
   private panel: HTMLDivElement | null = null;
   private overlay: HTMLDivElement | null = null;
   private settings: UserSettings;
+  private originalSettings: UserSettings;
   private onClose: () => void;
 
   constructor(settings: UserSettings, onClose: () => void) {
     this.settings = settings || DEFAULT_SETTINGS;
+    this.originalSettings = JSON.parse(JSON.stringify(this.settings)); // Deep copy
     this.onClose = onClose;
   }
 
@@ -25,6 +27,7 @@ export class GlobalSettingsPanel {
       const result = await browser.storage.local.get("userSettings");
       if (result.userSettings) {
         this.settings = { ...DEFAULT_SETTINGS, ...result.userSettings };
+        this.originalSettings = JSON.parse(JSON.stringify(this.settings)); // Deep copy
       }
     } catch (error) {
       console.error("Failed to load settings:", error);
@@ -78,31 +81,31 @@ export class GlobalSettingsPanel {
     panel.innerHTML = `
       <!-- Header -->
       <div class="wa-global-settings-header">
+        <h1 class="wa-global-settings-title">AI Assistant Settings</h1>
         <button class="wa-global-settings-back" aria-label="Close">
           ${Icons.close}
         </button>
-        <h1 class="wa-global-settings-title">AI Assistant Settings</h1>
       </div>
 
       <!-- Content -->
       <div class="wa-global-settings-content">
         
         <!-- OpenAI Configuration -->
-        <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">OpenAI Configuration</h2>
-          
+        <section class="wa-settings-section">          
           <div class="wa-settings-group">
             <label class="wa-settings-label" for="api-key">
               OpenAI API Key
               <span class="wa-settings-required">*</span>
             </label>
-            <input
-              type="password"
-              id="api-key"
-              class="wa-settings-input"
-              placeholder="sk-..."
-              value="${this.settings.ai.apiKey}"
-            />
+            <div class="wa-settings-input-container">
+                <input
+                  type="password"
+                  id="api-key"
+                  class="wa-settings-input"
+                  placeholder="sk-..."
+                  value="${this.settings.ai.apiKey}"
+                />
+            </div>
             <p class="wa-settings-help">
               Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
             </p>
@@ -130,8 +133,6 @@ export class GlobalSettingsPanel {
 
         <!-- Default Preferences -->
         <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">Default Preferences</h2>
-          
           <div class="wa-settings-group">
             <label class="wa-settings-label" for="default-tone">Default Response Tone</label>
             <select id="default-tone" class="wa-settings-select">
@@ -210,8 +211,6 @@ export class GlobalSettingsPanel {
 
         <!-- Enabled Features -->
         <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">Enabled Features</h2>
-          
           <div class="wa-settings-toggle">
             <div>
               <div class="wa-settings-toggle-label">Message Analysis</div>
@@ -280,8 +279,6 @@ export class GlobalSettingsPanel {
 
         <!-- UI Preferences -->
         <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">UI Preferences</h2>
-          
           <div class="wa-settings-toggle">
             <div>
               <div class="wa-settings-toggle-label">Show Message Hover Buttons</div>
@@ -309,8 +306,6 @@ export class GlobalSettingsPanel {
 
         <!-- Cache Settings -->
         <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">Cache & Storage</h2>
-          
           <div class="wa-settings-group">
             <label class="wa-settings-label" for="cache-retention">
               Cache Retention (Days)
@@ -363,8 +358,6 @@ export class GlobalSettingsPanel {
 
         <!-- Privacy -->
         <section class="wa-settings-section">
-          <h2 class="wa-settings-section-title">Privacy</h2>
-          
           <div class="wa-settings-toggle">
             <div>
               <div class="wa-settings-toggle-label">Data Collection</div>
@@ -395,9 +388,8 @@ export class GlobalSettingsPanel {
       </div>
 
       <!-- Footer -->
-      <div class="wa-global-settings-footer">
-        <button class="wa-settings-btn wa-settings-btn-secondary" id="cancel-btn">Cancel</button>
-        <button class="wa-settings-btn wa-settings-btn-primary" id="save-btn">Save & Reload</button>
+      <div class="wa-global-settings-footer" style="display: none;">
+        <button class="wa-settings-btn wa-settings-btn-primary" id="save-btn">Save Changes</button>
       </div>
     `;
 
@@ -410,10 +402,6 @@ export class GlobalSettingsPanel {
     // Close button
     const backBtn = this.panel.querySelector(".wa-global-settings-back");
     backBtn?.addEventListener("click", () => this.hide());
-
-    // Cancel button
-    const cancelBtn = this.panel.querySelector("#cancel-btn");
-    cancelBtn?.addEventListener("click", () => this.hide());
 
     // Save button
     const saveBtn = this.panel.querySelector("#save-btn");
@@ -432,11 +420,85 @@ export class GlobalSettingsPanel {
         if (valueSpan) {
           valueSpan.textContent = target.value;
         }
+        this.checkForChanges();
       });
+    });
+
+    // Track changes on all inputs
+    const allInputs = this.panel.querySelectorAll<
+      HTMLInputElement | HTMLSelectElement
+    >("input, select");
+    allInputs.forEach((input) => {
+      input.addEventListener("change", () => this.checkForChanges());
     });
 
     // Overlay click to close
     this.overlay?.addEventListener("click", () => this.hide());
+  }
+
+  private checkForChanges(): void {
+    if (!this.panel) return;
+
+    // Get current form values
+    const currentApiKey =
+      (this.panel.querySelector("#api-key") as HTMLInputElement)?.value || "";
+    const currentModel = (
+      this.panel.querySelector("#ai-model") as HTMLSelectElement
+    )?.value;
+    const currentTone = (
+      this.panel.querySelector("#default-tone") as HTMLSelectElement
+    )?.value;
+    const currentLanguage = (
+      this.panel.querySelector("#output-language") as HTMLSelectElement
+    )?.value;
+    const currentMessageLimit = parseInt(
+      (this.panel.querySelector("#message-limit") as HTMLInputElement)?.value ||
+        "20"
+    );
+    const currentCacheRetention = parseInt(
+      (this.panel.querySelector("#cache-retention") as HTMLInputElement)
+        ?.value || "30"
+    );
+    const currentMaxStories = parseInt(
+      (this.panel.querySelector("#max-stories") as HTMLInputElement)?.value ||
+        "10"
+    );
+
+    // Check for changes
+    const hasChanges =
+      currentApiKey !== this.originalSettings.ai.apiKey ||
+      currentModel !== this.originalSettings.ai.model ||
+      currentTone !== this.originalSettings.ai.defaultTone ||
+      currentLanguage !== this.originalSettings.general.outputLanguage ||
+      currentMessageLimit !== this.originalSettings.general.messageLimit ||
+      currentCacheRetention !== this.originalSettings.cache.retentionDays ||
+      currentMaxStories !== this.originalSettings.cache.maxStoriesPerChat ||
+      (this.panel.querySelector("#feature-analysis") as HTMLInputElement)
+        ?.checked !== this.originalSettings.ai.enabledFeatures.analyze ||
+      (this.panel.querySelector("#feature-translation") as HTMLInputElement)
+        ?.checked !== this.originalSettings.ai.enabledFeatures.translate ||
+      (this.panel.querySelector("#feature-reply") as HTMLInputElement)
+        ?.checked !== this.originalSettings.ai.enabledFeatures.generateReply ||
+      (this.panel.querySelector("#feature-context") as HTMLInputElement)
+        ?.checked !== this.originalSettings.ai.enabledFeatures.explainContext ||
+      (this.panel.querySelector("#feature-tone") as HTMLInputElement)
+        ?.checked !== this.originalSettings.ai.enabledFeatures.detectTone ||
+      (this.panel.querySelector("#show-hover-buttons") as HTMLInputElement)
+        ?.checked !== this.originalSettings.general.enableHoverButton ||
+      (this.panel.querySelector("#auto-cleanup") as HTMLInputElement)
+        ?.checked !== this.originalSettings.cache.autoCleanupEnabled ||
+      (this.panel.querySelector("#data-collection") as HTMLInputElement)
+        ?.checked !== this.originalSettings.privacy.dataCollectionEnabled ||
+      (this.panel.querySelector("#auto-delete") as HTMLInputElement)
+        ?.checked !== this.originalSettings.privacy.autoDeleteProcessedData;
+
+    // Show/hide save button based on changes
+    const footer = this.panel.querySelector(
+      ".wa-global-settings-footer"
+    ) as HTMLElement;
+    if (footer) {
+      footer.style.display = hasChanges ? "flex" : "none";
+    }
   }
 
   private handleSave(): void {
@@ -537,13 +599,13 @@ export class GlobalSettingsPanel {
     await this.loadSettings();
 
     // Create overlay
-    this.overlay = document.createElement("div");
-    this.overlay.className = DOMComponents.globalSettingsOverlay.substring(1); // Remove . prefix
-    document.body.appendChild(this.overlay);
+    // this.overlay = document.createElement("div");
+    // this.overlay.className = DOMComponents.globalSettingsOverlay.substring(1); // Remove . prefix
+    // document.body.appendChild(this.overlay);
 
     // Create and show panel
     this.panel = this.createPanel();
-    document.body.appendChild(this.panel);
+    document.querySelector(DOMComponents.side)?.appendChild(this.panel);
 
     // Setup event listeners
     this.setupEventListeners();
