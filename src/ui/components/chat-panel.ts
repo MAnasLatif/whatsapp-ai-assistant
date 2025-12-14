@@ -11,6 +11,7 @@ import type {
   ChatSettings,
   StoryThread,
 } from "@/types";
+import { LANGUAGE_OPTIONS } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 import { Icons } from "@/utils/icons";
 import {
@@ -302,34 +303,48 @@ export class ChatPanel {
       </div>
 
       <div class="wa-ai-form-group">
+        <label class="wa-ai-label">Reply Generation Language</label>
+        <select class="wa-ai-select" id="wa-ai-reply-lang">
+          <option value="">Use Global Setting</option>
+          ${LANGUAGE_OPTIONS.map(
+            (lang) => `
+            <option value="${lang.code}" ${
+              settings?.replyLanguage === lang.code ? "selected" : ""
+            }>${lang.name}</option>
+          `
+          ).join("")}
+        </select>
+        <div class="wa-ai-input-description">Language for AI-generated reply suggestions in this chat</div>
+      </div>
+
+      <div class="wa-ai-form-group">
+        <label class="wa-ai-label">Analysis & Story Language</label>
+        <select class="wa-ai-select" id="wa-ai-analysis-lang">
+          <option value="">Use Global Setting</option>
+          ${LANGUAGE_OPTIONS.map(
+            (lang) => `
+            <option value="${lang.code}" ${
+              settings?.analysisLanguage === lang.code ? "selected" : ""
+            }>${lang.name}</option>
+          `
+          ).join("")}
+        </select>
+        <div class="wa-ai-input-description">Language for message analysis and context stories in this chat</div>
+      </div>
+
+      <div class="wa-ai-form-group">
         <label class="wa-ai-label">Translation Language</label>
         <select class="wa-ai-select" id="wa-ai-translation-lang">
           <option value="">Use Global Setting</option>
-          <option value="en" ${
-            settings?.translationLanguage === "en" ? "selected" : ""
-          }>English</option>
-          <option value="es" ${
-            settings?.translationLanguage === "es" ? "selected" : ""
-          }>Spanish</option>
-          <option value="fr" ${
-            settings?.translationLanguage === "fr" ? "selected" : ""
-          }>French</option>
-          <option value="de" ${
-            settings?.translationLanguage === "de" ? "selected" : ""
-          }>German</option>
-          <option value="zh" ${
-            settings?.translationLanguage === "zh" ? "selected" : ""
-          }>Chinese</option>
-          <option value="ja" ${
-            settings?.translationLanguage === "ja" ? "selected" : ""
-          }>Japanese</option>
-          <option value="ar" ${
-            settings?.translationLanguage === "ar" ? "selected" : ""
-          }>Arabic</option>
-          <option value="ur" ${
-            settings?.translationLanguage === "ur" ? "selected" : ""
-          }>Urdu</option>
+          ${LANGUAGE_OPTIONS.map(
+            (lang) => `
+            <option value="${lang.code}" ${
+              settings?.translationLanguage === lang.code ? "selected" : ""
+            }>${lang.name}</option>
+          `
+          ).join("")}
         </select>
+        <div class="wa-ai-input-description">Default target language for translations in this chat</div>
       </div>
 
       <div class="wa-ai-toggle">
@@ -425,6 +440,12 @@ export class ChatPanel {
     const preferredTone =
       (panel.querySelector(DOMComponents.preferredTone) as HTMLSelectElement)
         ?.value || undefined;
+    const replyLanguage =
+      (panel.querySelector("#wa-ai-reply-lang") as HTMLSelectElement)?.value ||
+      undefined;
+    const analysisLanguage =
+      (panel.querySelector("#wa-ai-analysis-lang") as HTMLSelectElement)
+        ?.value || undefined;
     const translationLanguage =
       (panel.querySelector(DOMComponents.translationLang) as HTMLSelectElement)
         ?.value || undefined;
@@ -437,6 +458,8 @@ export class ChatPanel {
       chatId: this.chatId,
       customPrompt: customPrompt || undefined,
       preferredTone: preferredTone as any,
+      replyLanguage: replyLanguage || undefined,
+      analysisLanguage: analysisLanguage || undefined,
       translationLanguage: translationLanguage || undefined,
       autoAnalyze,
     };

@@ -43,6 +43,20 @@ export async function getSettings(): Promise<UserSettings> {
       return defaultSettings;
     }
 
+    // Migration: Handle old outputLanguage field
+    if (stored.general && "outputLanguage" in stored.general) {
+      const oldLang = (stored.general as any).outputLanguage;
+      if (!stored.general.replyLanguage) stored.general.replyLanguage = oldLang;
+      if (!stored.general.analysisLanguage)
+        stored.general.analysisLanguage = oldLang;
+      if (!stored.general.translationLanguage)
+        stored.general.translationLanguage = oldLang;
+      delete (stored.general as any).outputLanguage;
+      console.log(
+        "[Storage] Migrated old outputLanguage to new language structure"
+      );
+    }
+
     console.log("[Storage] Settings loaded from storage");
     // Merge with defaults to handle new settings fields
     return deepMerge(defaultSettings, stored) as UserSettings;

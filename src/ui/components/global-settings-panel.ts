@@ -7,7 +7,7 @@
 import { Icons } from "@/utils/icons";
 import { DOMComponents } from "@/utils/dom-components";
 import type { UserSettings, AIModel, ResponseTone } from "@/types";
-import { DEFAULT_SETTINGS } from "@/types";
+import { DEFAULT_SETTINGS, LANGUAGE_OPTIONS } from "@/types";
 
 export class GlobalSettingsPanel {
   private panel: HTMLDivElement | null = null;
@@ -212,42 +212,51 @@ export class GlobalSettingsPanel {
           </div>
 
           <div class="wa-settings-group">
-            <label class="wa-settings-label" for="output-language">Output Language</label>
-            <select id="output-language" class="wa-settings-select">
-              <option value="en" ${
-                this.settings.general.outputLanguage === "en" ? "selected" : ""
-              }>English</option>
-              <option value="es" ${
-                this.settings.general.outputLanguage === "es" ? "selected" : ""
-              }>Spanish</option>
-              <option value="fr" ${
-                this.settings.general.outputLanguage === "fr" ? "selected" : ""
-              }>French</option>
-              <option value="de" ${
-                this.settings.general.outputLanguage === "de" ? "selected" : ""
-              }>German</option>
-              <option value="it" ${
-                this.settings.general.outputLanguage === "it" ? "selected" : ""
-              }>Italian</option>
-              <option value="pt" ${
-                this.settings.general.outputLanguage === "pt" ? "selected" : ""
-              }>Portuguese</option>
-              <option value="ar" ${
-                this.settings.general.outputLanguage === "ar" ? "selected" : ""
-              }>Arabic</option>
-              <option value="ur" ${
-                this.settings.general.outputLanguage === "ur" ? "selected" : ""
-              }>Urdu</option>
-              <option value="hi" ${
-                this.settings.general.outputLanguage === "hi" ? "selected" : ""
-              }>Hindi</option>
-              <option value="zh" ${
-                this.settings.general.outputLanguage === "zh" ? "selected" : ""
-              }>Chinese</option>
-              <option value="ja" ${
-                this.settings.general.outputLanguage === "ja" ? "selected" : ""
-              }>Japanese</option>
+            <label class="wa-settings-label" for="reply-language">Reply Generation Language</label>
+            <select id="reply-language" class="wa-settings-select">
+              ${LANGUAGE_OPTIONS.map(
+                (lang) => `
+                <option value="${lang.code}" ${
+                  this.settings.general.replyLanguage === lang.code
+                    ? "selected"
+                    : ""
+                }>${lang.name}</option>
+              `
+              ).join("")}
             </select>
+            <p class="wa-settings-help">Language for AI-generated reply suggestions</p>
+          </div>
+
+          <div class="wa-settings-group">
+            <label class="wa-settings-label" for="analysis-language">Analysis & Story Language</label>
+            <select id="analysis-language" class="wa-settings-select">
+              ${LANGUAGE_OPTIONS.map(
+                (lang) => `
+                <option value="${lang.code}" ${
+                  this.settings.general.analysisLanguage === lang.code
+                    ? "selected"
+                    : ""
+                }>${lang.name}</option>
+              `
+              ).join("")}
+            </select>
+            <p class="wa-settings-help">Language for message analysis and context stories</p>
+          </div>
+
+          <div class="wa-settings-group">
+            <label class="wa-settings-label" for="translation-language">Translation Language</label>
+            <select id="translation-language" class="wa-settings-select">
+              ${LANGUAGE_OPTIONS.map(
+                (lang) => `
+                <option value="${lang.code}" ${
+                  this.settings.general.translationLanguage === lang.code
+                    ? "selected"
+                    : ""
+                }>${lang.name}</option>
+              `
+              ).join("")}
+            </select>
+            <p class="wa-settings-help">Default target language for translations</p>
           </div>
 
           <div class="wa-settings-group">
@@ -510,8 +519,14 @@ export class GlobalSettingsPanel {
     const currentTone = (
       this.panel.querySelector("#default-tone") as HTMLSelectElement
     )?.value;
-    const currentLanguage = (
-      this.panel.querySelector("#output-language") as HTMLSelectElement
+    const currentReplyLanguage = (
+      this.panel.querySelector("#reply-language") as HTMLSelectElement
+    )?.value;
+    const currentAnalysisLanguage = (
+      this.panel.querySelector("#analysis-language") as HTMLSelectElement
+    )?.value;
+    const currentTranslationLanguage = (
+      this.panel.querySelector("#translation-language") as HTMLSelectElement
     )?.value;
     const currentMessageLimit = parseInt(
       (this.panel.querySelector("#message-limit") as HTMLInputElement)?.value ||
@@ -531,7 +546,11 @@ export class GlobalSettingsPanel {
       currentApiKey !== this.originalSettings.ai.apiKey ||
       currentModel !== this.originalSettings.ai.model ||
       currentTone !== this.originalSettings.ai.defaultTone ||
-      currentLanguage !== this.originalSettings.general.outputLanguage ||
+      currentReplyLanguage !== this.originalSettings.general.replyLanguage ||
+      currentAnalysisLanguage !==
+        this.originalSettings.general.analysisLanguage ||
+      currentTranslationLanguage !==
+        this.originalSettings.general.translationLanguage ||
       currentMessageLimit !== this.originalSettings.general.messageLimit ||
       currentCacheRetention !== this.originalSettings.cache.retentionDays ||
       currentMaxStories !== this.originalSettings.cache.maxStoriesPerChat ||
@@ -574,8 +593,14 @@ export class GlobalSettingsPanel {
     const defaultTone = (
       this.panel.querySelector("#default-tone") as HTMLSelectElement
     )?.value as ResponseTone;
-    const outputLanguage =
-      (this.panel.querySelector("#output-language") as HTMLSelectElement)
+    const replyLanguage =
+      (this.panel.querySelector("#reply-language") as HTMLSelectElement)
+        ?.value || "en";
+    const analysisLanguage =
+      (this.panel.querySelector("#analysis-language") as HTMLSelectElement)
+        ?.value || "en";
+    const translationLanguage =
+      (this.panel.querySelector("#translation-language") as HTMLSelectElement)
         ?.value || "en";
     const messageLimit = parseInt(
       (this.panel.querySelector("#message-limit") as HTMLInputElement)?.value ||
@@ -627,7 +652,9 @@ export class GlobalSettingsPanel {
       },
       general: {
         ...this.settings.general,
-        outputLanguage,
+        replyLanguage,
+        analysisLanguage,
+        translationLanguage,
         messageLimit,
         enableHoverButton:
           (this.panel.querySelector("#show-hover-buttons") as HTMLInputElement)

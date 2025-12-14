@@ -27,11 +27,40 @@ export interface AIFeatureFlags {
 }
 
 export interface GeneralSettings {
-  outputLanguage: string;
+  replyLanguage: string;
+  analysisLanguage: string; // Used for Analysis and Story generation
+  translationLanguage: string;
   messageLimit: number; // 5-50
   enableHoverButton: boolean;
   keyboardShortcuts: KeyboardShortcuts;
 }
+
+// Language options for dropdowns
+export const LANGUAGE_OPTIONS = [
+  { code: "en", name: "English" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "it", name: "Italian" },
+  { code: "pt", name: "Portuguese" },
+  { code: "ru", name: "Russian" },
+  { code: "ar", name: "Arabic" },
+  { code: "ur", name: "Urdu" },
+  { code: "ur-roman", name: "Roman Urdu" },
+  { code: "hi", name: "Hindi" },
+  { code: "bn", name: "Bengali" },
+  { code: "zh", name: "Chinese (Simplified)" },
+  { code: "zh-TW", name: "Chinese (Traditional)" },
+  { code: "ja", name: "Japanese" },
+  { code: "ko", name: "Korean" },
+  { code: "tr", name: "Turkish" },
+  { code: "nl", name: "Dutch" },
+  { code: "pl", name: "Polish" },
+  { code: "vi", name: "Vietnamese" },
+  { code: "th", name: "Thai" },
+  { code: "id", name: "Indonesian" },
+  { code: "ms", name: "Malay" },
+];
 
 export interface KeyboardShortcuts {
   analyze: string;
@@ -77,7 +106,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
     },
   },
   general: {
-    outputLanguage: "en",
+    replyLanguage: "en",
+    analysisLanguage: "en",
+    translationLanguage: "en",
     messageLimit: 20,
     enableHoverButton: true,
     keyboardShortcuts: {
@@ -151,6 +182,8 @@ export interface ChatSettings {
   customPrompt?: string;
   preferredTone?: ResponseTone;
   autoAnalyze: boolean;
+  replyLanguage?: string;
+  analysisLanguage?: string;
   translationLanguage?: string;
 }
 

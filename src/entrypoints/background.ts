@@ -12,6 +12,7 @@ import {
   getStories,
   performCacheCleanup,
   saveChatSummary,
+  getChatSettings,
 } from "@/utils/storage";
 import type {
   ExtensionMessage,
@@ -102,7 +103,11 @@ async function handleMessage(
 
     case "TRANSLATE_MESSAGE":
       return await translateMessage(
-        payload as { messageData: MessageData; targetLanguage?: string }
+        payload as {
+          messageData: MessageData;
+          targetLanguage?: string;
+          chatId?: string;
+        }
       );
 
     case "EXPLAIN_CONTEXT":
@@ -194,21 +199,26 @@ async function analyzeMessage(payload: {
   chatId: string;
 }): Promise<ExtensionResponse> {
   const settings = await getSettings();
+  const chatSettings = await getChatSettings(payload.chatId);
 
   if (!settings.ai.apiKey) {
     return { success: false, error: "API key not configured" };
   }
 
   const { messageData } = payload;
+  const analysisLang =
+    chatSettings.analysisLanguage || settings.general.analysisLanguage;
   const systemPrompt = `You are an AI assistant analyzing WhatsApp messages. Provide a concise analysis of the message including:
 1. Key points or main topic
 2. Any implied meaning or context
 3. Suggested response considerations
 
 Respond in ${
-    settings.general.outputLanguage === "en"
+    analysisLang === "en"
       ? "English"
-      : settings.general.outputLanguage
+      : analysisLang === "ur-roman"
+      ? "Roman Urdu (Urdu written in Latin script)"
+      : analysisLang
   }.
 Keep your response brief and actionable.`;
 
@@ -247,16 +257,27 @@ Keep your response brief and actionable.`;
 async function translateMessage(payload: {
   messageData: MessageData;
   targetLanguage?: string;
+  chatId?: string;
 }): Promise<ExtensionResponse> {
   const settings = await getSettings();
+  const chatSettings = payload.chatId
+    ? await getChatSettings(payload.chatId)
+    : null;
 
   if (!settings.ai.apiKey) {
     return { success: false, error: "API key not configured" };
   }
 
-  const targetLang = payload.targetLanguage || settings.general.outputLanguage;
+  const targetLang =
+    payload.targetLanguage ||
+    chatSettings?.translationLanguage ||
+    settings.general.translationLanguage;
+  const targetLangName =
+    targetLang === "ur-roman"
+      ? "Roman Urdu (Urdu written in Latin script)"
+      : targetLang;
 
-  const systemPrompt = `You are a translator. Translate the following message to ${targetLang}. 
+  const systemPrompt = `You are a translator. Translate the following message to ${targetLangName}. 
 Only provide the translation, no explanations.
 If the message is already in the target language, indicate that.`;
 
@@ -295,20 +316,25 @@ async function explainContext(payload: {
   chatId: string;
 }): Promise<ExtensionResponse> {
   const settings = await getSettings();
+  const chatSettings = await getChatSettings(payload.chatId);
 
   if (!settings.ai.apiKey) {
     return { success: false, error: "API key not configured" };
   }
 
+  const analysisLang =
+    chatSettings.analysisLanguage || settings.general.analysisLanguage;
   const systemPrompt = `You are an AI assistant helping understand message context. Explain:
 1. What the message likely refers to
 2. Any cultural or contextual references
 3. The implied meaning or subtext
 
 Respond in ${
-    settings.general.outputLanguage === "en"
+    analysisLang === "en"
       ? "English"
-      : settings.general.outputLanguage
+      : analysisLang === "ur-roman"
+      ? "Roman Urdu (Urdu written in Latin script)"
+      : analysisLang
   }.
 Be concise and helpful.`;
 
@@ -408,6 +434,7 @@ async function generateReply(payload: {
   chatId: string;
 }): Promise<ExtensionResponse> {
   const settings = await getSettings();
+  const chatSettings = await getChatSettings(payload.chatId);
 
   if (!settings.ai.apiKey) {
     return { success: false, error: "API key not configured" };
@@ -415,6 +442,8 @@ async function generateReply(payload: {
 
   const tones = ["neutral", "friendly", "professional"];
   const { messageData } = payload;
+  const replyLang =
+    chatSettings.replyLanguage || settings.general.replyLanguage;
 
   const systemPrompt = `Generate 3 different reply options to this WhatsApp message, each with a different tone.
 Return a JSON array with exactly 3 objects:
@@ -428,9 +457,11 @@ Guidelines:
 - Keep replies concise and natural
 - Match typical WhatsApp messaging style
 - Respond in ${
-    settings.general.outputLanguage === "en"
+    replyLang === "en"
       ? "English"
-      : settings.general.outputLanguage
+      : replyLang === "ur-roman"
+      ? "Roman Urdu (Urdu written in Latin script)"
+      : replyLang
   }
 - Only return valid JSON array, no other text`;
 
