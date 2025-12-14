@@ -561,6 +561,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 .wa-ai-chat-info svg {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   fill: ${colors.primary};
 }
@@ -819,6 +821,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
 }
 
 .wa-ai-empty-state svg {
+  width: 64px;
+  height: 64px;
   margin-bottom: 16px;
   fill: ${colors.textSecondary};
 }
