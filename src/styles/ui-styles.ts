@@ -1047,9 +1047,10 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   color: ${colors.primary};
   font-weight: 600;
 }
+
 .wa-settings-input-container {
-  position: relative;
-  height: 40px;
+  display: flex;
+  gap: 8px;
 }
 
 .wa-settings-input,
@@ -1063,13 +1064,6 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   border-radius: 8px;
   outline: none;
   transition: all 0.2s;
-}
-
-.wa-settings-input {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: auto;
 }
 
 .wa-settings-input:focus,
@@ -1214,6 +1208,23 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button#test-api-key-btn {
+  flex: 0;
+  flex-shrink: 0;
+  background: #00a884;
+  color: white;
+}
+
+.wa-settings-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .wa-settings-btn-primary {
@@ -1237,6 +1248,20 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   background: ${
     theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
   };
+}
+
+/* API Key Status */
+#api-key-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+#api-key-status svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* Toast Messages */

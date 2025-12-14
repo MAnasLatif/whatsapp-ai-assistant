@@ -75,6 +75,64 @@ export class GlobalSettingsPanel {
     setTimeout(() => message.remove(), 3000);
   }
 
+  private async testApiKey(): Promise<void> {
+    if (!this.panel) return;
+
+    const apiKeyInput = this.panel.querySelector(
+      "#api-key"
+    ) as HTMLInputElement;
+    const testBtn = this.panel.querySelector(
+      "#test-api-key-btn"
+    ) as HTMLButtonElement;
+    const statusDiv = this.panel.querySelector(
+      "#api-key-status"
+    ) as HTMLElement;
+    const apiKey = apiKeyInput?.value?.trim();
+
+    if (!apiKey || !apiKey.startsWith("sk-")) {
+      statusDiv.style.display = "flex";
+      statusDiv.style.color = "#f44336";
+      statusDiv.innerHTML = `${Icons.error} Please enter a valid API key starting with 'sk-'`;
+      return;
+    }
+
+    // Show loading state
+    testBtn.disabled = true;
+    testBtn.innerHTML = `${Icons.loading} Testing...`;
+    statusDiv.style.display = "flex";
+    statusDiv.style.color = "#666";
+    statusDiv.innerHTML = `${Icons.loading} Testing connection...`;
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/models", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+
+      if (response.ok) {
+        statusDiv.style.color = "#4caf50";
+        statusDiv.innerHTML = `${Icons.check} API key is valid!`;
+        setTimeout(() => {
+          statusDiv.style.display = "none";
+        }, 3000);
+      } else {
+        const error = await response.json();
+        statusDiv.style.color = "#f44336";
+        statusDiv.innerHTML = `${Icons.error} Invalid API key: ${
+          error.error?.message || "Authentication failed"
+        }`;
+      }
+    } catch (error) {
+      statusDiv.style.color = "#f44336";
+      statusDiv.innerHTML = `${Icons.error} Network error: Unable to connect to OpenAI`;
+    } finally {
+      testBtn.disabled = false;
+      testBtn.innerHTML = `${Icons.check} Test`;
+    }
+  }
+
   private createPanel(): HTMLDivElement {
     const panel = document.createElement("div");
     panel.className = DOMComponents.globalSettingsPanel.substring(1); // Remove . prefix
@@ -104,8 +162,13 @@ export class GlobalSettingsPanel {
                   class="wa-settings-input"
                   placeholder="sk-..."
                   value="${this.settings.ai.apiKey}"
+                  style="flex: 1;"
                 />
+                <button class="wa-settings-btn" id="test-api-key-btn" style="white-space: nowrap;">
+                  ${Icons.check} Test
+                </button>
             </div>
+            <div id="api-key-status" style="margin-top: 8px; display: none;"></div>
             <p class="wa-settings-help">
               Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
             </p>
@@ -406,6 +469,10 @@ export class GlobalSettingsPanel {
     // Save button
     const saveBtn = this.panel.querySelector("#save-btn");
     saveBtn?.addEventListener("click", () => this.handleSave());
+
+    // Test API key button
+    const testBtn = this.panel.querySelector("#test-api-key-btn");
+    testBtn?.addEventListener("click", () => this.testApiKey());
 
     // Range input live updates
     const rangeInputs = this.panel.querySelectorAll<HTMLInputElement>(
