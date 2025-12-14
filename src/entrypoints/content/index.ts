@@ -3,8 +3,8 @@
  * Handles DOM manipulation, UI injection, and message extraction
  */
 
-import { createApp, type App } from "./ui/app";
-import { injectStyles } from "./ui/styles";
+import { createApp, type App } from "@/ui/app";
+import { injectStyles } from "@/ui/styles";
 import {
   detectTheme,
   waitForElement,
