@@ -3,7 +3,7 @@
  * FR-37, FR-38, FR-39: AI action button on message hover with native styling
  */
 
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 
 export class MessageActionButton {
   public element: HTMLButtonElement;

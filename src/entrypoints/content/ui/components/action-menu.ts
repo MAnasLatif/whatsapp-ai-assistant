@@ -3,7 +3,7 @@
  * FR-40, FR-41: Context menu with AI action options
  */
 
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 import type { MessageData } from "@/utils/whatsapp-dom";
 
 interface ActionItem {

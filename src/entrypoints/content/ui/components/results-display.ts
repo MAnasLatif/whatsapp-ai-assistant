@@ -3,7 +3,7 @@
  * FR-43, FR-53: Display AI results in native WhatsApp message bubble style
  */
 
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 
 export class ResultsDisplay {

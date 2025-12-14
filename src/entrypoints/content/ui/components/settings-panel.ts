@@ -10,7 +10,7 @@ import type {
   ChatContext,
   ChatSettings,
   StoryThread,
-} from "@/utils/types";
+} from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 import {
   getChatContext,

@@ -3,8 +3,8 @@
  * CSS styles for injected UI components
  */
 
-import type { WhatsAppTheme, ThemeColors } from "@/utils/types";
-import { THEME_COLORS as themeColors } from "@/utils/types";
+import type { WhatsAppTheme, ThemeColors } from "@/types";
+import { THEME_COLORS as themeColors } from "@/types";
 
 let styleElement: HTMLStyleElement | null = null;
 let shadowStyleElement: HTMLStyleElement | null = null;

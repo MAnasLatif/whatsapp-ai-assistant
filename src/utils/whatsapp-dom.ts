@@ -3,7 +3,7 @@
  * Helper functions for extracting and manipulating WhatsApp Web DOM elements
  */
 
-import type { WhatsAppTheme } from "./types";
+import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "./dom-components";
 
 export interface MessageData {

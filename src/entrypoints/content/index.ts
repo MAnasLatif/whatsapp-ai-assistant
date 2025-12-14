@@ -11,7 +11,7 @@ import {
   observeThemeChanges,
   getAllMessages,
 } from "@/utils/whatsapp-dom";
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 
 // Global state

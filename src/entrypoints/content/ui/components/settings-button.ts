@@ -3,7 +3,7 @@
  * FR-01, FR-02: AI settings button positioned with native WhatsApp styling
  */
 
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 
 export class SettingsButton {

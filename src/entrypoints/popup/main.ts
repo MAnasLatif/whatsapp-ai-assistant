@@ -9,7 +9,7 @@ import {
   formatBytes,
   getCacheStats,
 } from "@/utils/storage";
-import type { UserSettings, AIModel, ResponseTone } from "@/utils/types";
+import type { UserSettings, AIModel, ResponseTone } from "@/types";
 import { createPopupStyles } from "./styles";
 
 class PopupApp {

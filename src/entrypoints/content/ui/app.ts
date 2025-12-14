@@ -3,7 +3,7 @@
  * Manages UI components injected into WhatsApp Web
  */
 
-import type { WhatsAppTheme } from "@/utils/types";
+import type { WhatsAppTheme } from "@/types";
 import {
   extractMessageData,
   getActiveChatId,

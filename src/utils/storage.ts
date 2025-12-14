@@ -13,8 +13,8 @@ import type {
   ChatSettings,
   ChatSummary,
   DEFAULT_SETTINGS,
-} from "./types";
-import { DEFAULT_SETTINGS as defaultSettings } from "./types";
+} from "@/types";
+import { DEFAULT_SETTINGS as defaultSettings } from "@/types";
 
 // Storage keys
 const STORAGE_KEYS = {

@@ -19,7 +19,7 @@ import type {
   UserSettings,
   OpenAICompletionRequest,
   OpenAICompletionResponse,
-} from "@/utils/types";
+} from "@/types";
 import type { MessageData } from "@/utils/whatsapp-dom";
 
 // Import storage debug tools in dev mode
