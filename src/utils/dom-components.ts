@@ -43,7 +43,7 @@ export const DOMComponents = {
   // ===== Extension Custom Elements =====
   aiAssistantRoot: "#wa-ai-assistant-root",
   aiContainer: "#wa-ai-container",
-  aiSettingsButton: ".wa-ai-settings-btn",
+  aiChatButton: ".wa-ai-chat-btn",
   aiActionButton: ".wa-ai-action-btn",
   aiActionButtonClass: "ai-action-btn",
 
@@ -68,13 +68,13 @@ export const DOMComponents = {
   messageActionContainer: ".focusable-list-item ._amk6._amlo",
 
   // ===== Extension Component Selectors =====
-  // Settings Panel
-  settingsOverlay: ".wa-ai-settings-overlay",
-  settingsPanel: ".wa-ai-settings-panel",
-  settingsCloseBtn: ".wa-ai-close-btn",
-  settingsTabBtn: ".wa-ai-tab-btn",
-  settingsContent: ".wa-ai-settings-content",
-  settingsSwitch: ".wa-ai-switch",
+  // Chat Panel
+  chatOverlay: ".wa-ai-chat-overlay",
+  chatPanel: ".wa-ai-chat-panel",
+  chatCloseBtn: ".wa-ai-close-btn",
+  chatTabBtn: ".wa-ai-tab-btn",
+  chatContent: ".wa-ai-chat-content",
+  chatSwitch: ".wa-ai-switch",
 
   // Settings Panel - IDs
   generateSummary: "#wa-ai-generate-summary",

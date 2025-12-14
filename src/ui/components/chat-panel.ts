@@ -1,6 +1,6 @@
 /**
- * Settings Panel Component - Chat-Specific Settings
- * Shows per-chat settings, summary, and story threads
+ * Chat Panel Component - Chat-Specific Details
+ * Shows per-chat summary, story threads, and settings
  * Global settings moved to extension popup
  */
 
@@ -23,7 +23,7 @@ import {
 
 type TabId = "summary" | "stories" | "settings";
 
-export class SettingsPanel {
+export class ChatPanel {
   private container: HTMLElement;
   private panelElement: HTMLElement | null = null;
   private theme: WhatsAppTheme;
@@ -76,20 +76,20 @@ export class SettingsPanel {
 
   private createElement(): HTMLElement {
     const overlay = document.createElement("div");
-    overlay.className = DOMComponents.settingsOverlay.substring(1); // Remove . prefix
+    overlay.className = DOMComponents.chatOverlay.substring(1); // Remove . prefix
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) this.hide();
     });
 
     const panel = document.createElement("div");
-    panel.className = DOMComponents.settingsPanel.substring(1); // Remove . prefix
+    panel.className = DOMComponents.chatPanel.substring(1); // Remove . prefix
     panel.innerHTML = `
-      <div class="wa-ai-settings-header">
+      <div class="wa-ai-chat-header">
         <div>
-          <h2 class="wa-ai-settings-title">${
-            this.chatContext?.chatName || "Chat Settings"
+          <h2 class="wa-ai-chat-title">${
+            this.chatContext?.chatName || "Chat Details"
           }</h2>
-          <p class="wa-ai-settings-subtitle">${
+          <p class="wa-ai-chat-subtitle">${
             this.isGroup ? "Group Chat" : "Private Chat"
           } • ${this.chatId.split("@")[0]}</p>
         </div>
@@ -99,29 +99,29 @@ export class SettingsPanel {
           </svg>
         </button>
       </div>
-      <div class="wa-ai-settings-info">
+      <div class="wa-ai-chat-info">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
         </svg>
         <span>For global AI settings, click the extension icon in toolbar</span>
       </div>
-      <div class="wa-ai-settings-tabs">
+      <div class="wa-ai-chat-tabs">
         <button class="wa-ai-tab-btn active" data-tab="summary">Summary</button>
         <button class="wa-ai-tab-btn" data-tab="stories">Stories (${
           this.chatContext?.stories.length || 0
         })</button>
         <button class="wa-ai-tab-btn" data-tab="settings">Settings</button>
       </div>
-      <div class="wa-ai-settings-content">
+      <div class="wa-ai-chat-content">
         ${this.renderTabContent("summary")}
       </div>
     `;
 
     // Setup event listeners
-    const closeBtn = panel.querySelector(DOMComponents.settingsCloseBtn);
+    const closeBtn = panel.querySelector(DOMComponents.chatCloseBtn);
     closeBtn?.addEventListener("click", () => this.hide());
 
-    const tabBtns = panel.querySelectorAll(DOMComponents.settingsTabBtn);
+    const tabBtns = panel.querySelectorAll(DOMComponents.chatTabBtn);
     tabBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const tab = (e.target as HTMLElement).dataset.tab as TabId;
@@ -140,13 +140,13 @@ export class SettingsPanel {
     this.activeTab = tab;
 
     // Update tab buttons
-    const tabBtns = panel.querySelectorAll(DOMComponents.settingsTabBtn);
+    const tabBtns = panel.querySelectorAll(DOMComponents.chatTabBtn);
     tabBtns.forEach((btn) => {
       btn.classList.toggle("active", (btn as HTMLElement).dataset.tab === tab);
     });
 
     // Update content
-    const content = panel.querySelector(DOMComponents.settingsContent);
+    const content = panel.querySelector(DOMComponents.chatContent);
     if (content) {
       content.innerHTML = this.renderTabContent(tab);
       this.setupTabListeners(panel);
@@ -411,7 +411,7 @@ export class SettingsPanel {
 
   private setupTabListeners(panel: HTMLElement): void {
     // Toggle switches
-    panel.querySelectorAll(DOMComponents.settingsSwitch).forEach((toggle) => {
+    panel.querySelectorAll(DOMComponents.chatSwitch).forEach((toggle) => {
       toggle.addEventListener("click", () => {
         toggle.classList.toggle("active");
       });
@@ -467,7 +467,7 @@ export class SettingsPanel {
         );
         this.switchTab(
           "summary",
-          panel.closest(DOMComponents.settingsPanel) as HTMLElement
+          panel.closest(DOMComponents.chatPanel) as HTMLElement
         );
       }
     } catch (error) {
@@ -522,7 +522,7 @@ export class SettingsPanel {
       );
       this.switchTab(
         "summary",
-        panel.closest(DOMComponents.settingsPanel) as HTMLElement
+        panel.closest(DOMComponents.chatPanel) as HTMLElement
       );
     }
   }

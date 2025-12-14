@@ -10,8 +10,8 @@ import {
   isGroupChat,
   type MessageData,
 } from "@/utils/whatsapp-dom";
-import { SettingsButton } from "./components/settings-button";
-import { SettingsPanel } from "./components/settings-panel";
+import { ChatButton } from "./components/chat-button";
+import { ChatPanel } from "./components/chat-panel";
 import { MessageActionButton } from "./components/message-action-button";
 import { ActionMenu } from "./components/action-menu";
 import { ResultsDisplay } from "./components/results-display";
@@ -21,8 +21,8 @@ import { DOMComponents } from "@/utils/dom-components";
 export interface App {
   updateTheme: (theme: WhatsAppTheme) => void;
   injectMessageButton: (messageElement: HTMLElement) => void;
-  openSettings: () => void;
-  closeSettings: () => void;
+  openChat: () => void;
+  closeChat: () => void;
   destroy: () => void;
 }
 
@@ -31,7 +31,7 @@ export interface App {
  */
 export function createApp(initialTheme: WhatsAppTheme): App {
   let currentTheme = initialTheme;
-  let settingsPanel: SettingsPanel | null = null;
+  let chatPanel: ChatPanel | null = null;
   let actionMenu: ActionMenu | null = null;
   let resultsDisplay: ResultsDisplay | null = null;
 
@@ -55,12 +55,12 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   shadowRoot.appendChild(container);
 
   // Initialize components
-  const settingsButton = new SettingsButton(currentTheme, () => {
-    openSettings();
+  const chatButton = new ChatButton(currentTheme, () => {
+    openChat();
   });
 
-  // Inject settings button into WhatsApp sidebar
-  injectSettingsButton(settingsButton);
+  // Inject chat button into WhatsApp sidebar
+  injectChatButton(chatButton);
 
   // Initialize action menu
   actionMenu = new ActionMenu(container, currentTheme, handleAIAction);
@@ -69,16 +69,16 @@ export function createApp(initialTheme: WhatsAppTheme): App {
   resultsDisplay = new ResultsDisplay(container, currentTheme);
 
   /**
-   * Inject settings button before the "New chat" button
+   * Inject chat button before the "New chat" button
    */
-  function injectSettingsButton(button: SettingsButton, retries = 0): void {
+  function injectChatButton(button: ChatButton, retries = 0): void {
     console.log(
-      `[WhatsApp AI Assistant] Attempting to inject settings button (retry ${retries})...`
+      `[WhatsApp AI Assistant] Attempting to inject chat button (retry ${retries})...`
     );
 
     // Check if already injected
-    if (document.querySelector(DOMComponents.aiSettingsButton)) {
-      console.log("[WhatsApp AI Assistant] Settings button already exists");
+    if (document.querySelector(DOMComponents.aiChatButton)) {
+      console.log("[WhatsApp AI Assistant] Chat button already exists");
       return;
     }
 
@@ -90,7 +90,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
         "[WhatsApp AI Assistant] New chat button not found, will retry..."
       );
       if (retries < 10) {
-        setTimeout(() => injectSettingsButton(button, retries + 1), 2000);
+        setTimeout(() => injectChatButton(button, retries + 1), 2000);
       } else {
         console.warn(
           "[WhatsApp AI Assistant] New chat button not found after 10 retries"
@@ -113,7 +113,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
         "[WhatsApp AI Assistant] Cannot find new chat span container"
       );
       if (retries < 10) {
-        setTimeout(() => injectSettingsButton(button, retries + 1), 2000);
+        setTimeout(() => injectChatButton(button, retries + 1), 2000);
       }
       return;
     }
@@ -123,7 +123,7 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     if (!buttonsContainer) {
       console.warn("[WhatsApp AI Assistant] Cannot find buttons container");
       if (retries < 10) {
-        setTimeout(() => injectSettingsButton(button, retries + 1), 2000);
+        setTimeout(() => injectChatButton(button, retries + 1), 2000);
       }
       return;
     }
@@ -136,21 +136,19 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     // Insert before the new chat button span
     buttonsContainer.insertBefore(buttonWrapper, newChatSpan);
 
-    console.log(
-      "[WhatsApp AI Assistant] Settings button injected successfully"
-    );
+    console.log("[WhatsApp AI Assistant] Chat button injected successfully");
   }
 
   /**
-   * Open settings panel
+   * Open chat panel
    */
-  function openSettings(): void {
+  function openChat(): void {
     // Get current active chat ID
     const chatId = getActiveChatId();
 
     if (!chatId) {
       console.warn("[WhatsApp AI Assistant] No active chat found");
-      alert("Please open a chat to view its settings");
+      alert("Please open a chat to view its details");
       return;
     }
 
@@ -161,26 +159,26 @@ export function createApp(initialTheme: WhatsAppTheme): App {
     const chatName = chatHeader?.textContent || "";
     const isGroup = isGroupChat();
 
-    // Always create a new settings panel for the current chat
-    settingsPanel = new SettingsPanel(
+    // Always create a new chat panel for the current chat
+    chatPanel = new ChatPanel(
       container,
       currentTheme,
       chatId,
       chatName,
       isGroup,
       () => {
-        closeSettings();
+        closeChat();
       }
     );
 
-    settingsPanel.show();
+    chatPanel.show();
   }
 
   /**
-   * Close settings panel
+   * Close chat panel
    */
-  function closeSettings(): void {
-    settingsPanel?.hide();
+  function closeChat(): void {
+    chatPanel?.hide();
   }
 
   /**
@@ -238,8 +236,8 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       currentTheme = theme;
       container.className = `wa-ai-theme-${theme}`;
       injectShadowStyles(shadowRoot, theme); // Update shadow styles
-      settingsButton.updateTheme(theme);
-      settingsPanel?.updateTheme(theme);
+      chatButton.updateTheme(theme);
+      chatPanel?.updateTheme(theme);
       actionMenu?.updateTheme(theme);
       resultsDisplay?.updateTheme(theme);
     },
@@ -271,12 +269,12 @@ export function createApp(initialTheme: WhatsAppTheme): App {
       }
     },
 
-    openSettings,
-    closeSettings,
+    openChat,
+    closeChat,
 
     destroy(): void {
-      settingsButton.destroy();
-      settingsPanel?.destroy();
+      chatButton.destroy();
+      chatPanel?.destroy();
       actionMenu?.destroy();
       resultsDisplay?.destroy();
       shadowHost.remove();

@@ -54,8 +54,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   return `
 /* WhatsApp AI Assistant Styles */
 
-/* Settings Button */
-.wa-ai-settings-btn {
+/* Chat Button */
+.wa-ai-chat-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,19 +70,19 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   color: ${theme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)"};
 }
 
-.wa-ai-settings-btn:hover {
+.wa-ai-chat-btn:hover {
   background-color: ${
     theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"
   };
 }
 
-.wa-ai-settings-btn:active {
+.wa-ai-chat-btn:active {
   background-color: ${
     theme === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"
   };
 }
 
-.wa-ai-settings-btn svg {
+.wa-ai-chat-btn svg {
   width: 24px;
   height: 24px;
   fill: currentColor;
@@ -174,8 +174,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   height: 18px;
 }
 
-/* Settings Panel */
-.wa-ai-settings-overlay {
+/* Chat Panel */
+.wa-ai-chat-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -189,7 +189,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   animation: wa-ai-fade-in 0.2s ease;
 }
 
-.wa-ai-settings-panel {
+.wa-ai-chat-panel {
   background: ${colors.surface};
   border-radius: 12px;
   width: 90%;
@@ -202,7 +202,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   animation: wa-ai-slide-up 0.25s ease;
 }
 
-.wa-ai-settings-header {
+.wa-ai-chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -210,7 +210,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   border-bottom: 1px solid ${colors.border};
 }
 
-.wa-ai-settings-title {
+.wa-ai-chat-title {
   font-size: 18px;
   font-weight: 600;
   color: ${colors.text};
@@ -238,7 +238,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   color: ${colors.text};
 }
 
-.wa-ai-settings-tabs {
+.wa-ai-chat-tabs {
   display: flex;
   border-bottom: 1px solid ${colors.border};
   padding: 0 20px;
@@ -274,7 +274,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   background: ${colors.primary};
 }
 
-.wa-ai-settings-content {
+.wa-ai-chat-content {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
@@ -546,8 +546,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   margin-top: 4px;
 }
 
-/* Settings Info Banner */
-.wa-ai-settings-info {
+/* Chat Info Banner */
+.wa-ai-chat-info {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -560,7 +560,7 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   color: ${colors.textSecondary};
 }
 
-.wa-ai-settings-info svg {
+.wa-ai-chat-info svg {
   flex-shrink: 0;
   fill: ${colors.primary};
 }
@@ -598,8 +598,8 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   line-height: 1.5;
 }
 
-/* Settings Header Subtitle */
-.wa-ai-settings-subtitle {
+/* Chat Header Subtitle */
+.wa-ai-chat-subtitle {
   font-size: 13px;
   color: ${colors.textSecondary};
   margin-top: 4px;

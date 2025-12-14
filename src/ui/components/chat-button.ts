@@ -1,12 +1,12 @@
 /**
- * Settings Button Component
- * FR-01, FR-02: AI settings button positioned with native WhatsApp styling
+ * Chat Button Component
+ * FR-01, FR-02: AI chat button positioned with native WhatsApp styling
  */
 
 import type { WhatsAppTheme } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 
-export class SettingsButton {
+export class ChatButton {
   public element: HTMLButtonElement;
   private theme: WhatsAppTheme;
   private onClick: () => void;
@@ -19,11 +19,11 @@ export class SettingsButton {
 
   private createElement(): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `${DOMComponents.aiSettingsButton.substring(1)} ${
+    button.className = `${DOMComponents.aiChatButton.substring(1)} ${
       DOMComponents.whatsappButtonBase
     }`; // Remove . prefix
-    button.setAttribute("aria-label", "AI Assistant Settings");
-    button.setAttribute("title", "AI Assistant Settings");
+    button.setAttribute("aria-label", "AI Chat Details");
+    button.setAttribute("title", "AI Chat Details");
     button.setAttribute("type", "button");
     button.setAttribute("tabindex", "0");
     button.setAttribute("aria-disabled", "false");

@@ -41,7 +41,7 @@ export interface KeyboardShortcuts {
   analyze: string;
   translate: string;
   generateReply: string;
-  openSettings: string;
+  openChat: string;
 }
 
 export interface CacheSettings {
@@ -88,7 +88,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
       analyze: "Alt+A",
       translate: "Alt+T",
       generateReply: "Alt+R",
-      openSettings: "Alt+S",
+      openChat: "Alt+S",
     },
   },
   cache: {
@@ -282,7 +282,7 @@ export interface OpenAICompletionResponse {
 // UI State Types
 // ============================================
 
-export interface SettingsPanelState {
+export interface ChatPanelState {
   isOpen: boolean;
   activeTab: "general" | "ai" | "cache" | "privacy";
 }
