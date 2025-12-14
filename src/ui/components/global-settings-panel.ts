@@ -175,18 +175,18 @@ export class GlobalSettingsPanel {
           <div class="wa-settings-group">
             <label class="wa-settings-label" for="ai-model">AI Model</label>
             <select id="ai-model" class="wa-settings-select">
-              <option value="gpt-4o" ${
-                this.settings.ai.model === "gpt-4o" ? "selected" : ""
-              }>GPT-4o (Recommended)</option>
-              <option value="gpt-4o-mini" ${
-                this.settings.ai.model === "gpt-4o-mini" ? "selected" : ""
-              }>GPT-4o Mini (Faster)</option>
-              <option value="gpt-4-turbo" ${
-                this.settings.ai.model === "gpt-4-turbo" ? "selected" : ""
-              }>GPT-4 Turbo</option>
-              <option value="gpt-3.5-turbo" ${
-                this.settings.ai.model === "gpt-3.5-turbo" ? "selected" : ""
-              }>GPT-3.5 Turbo (Cheapest)</option>
+              <option value="gpt-5.2" ${
+                this.settings.ai.model === "gpt-5.2" ? "selected" : ""
+              }>GPT-5.2 (Latest Flagship)</option>
+              <option value="gpt-5" ${
+                this.settings.ai.model === "gpt-5" ? "selected" : ""
+              }>GPT-5 (Standard)</option>
+              <option value="gpt-5-mini" ${
+                this.settings.ai.model === "gpt-5-mini" ? "selected" : ""
+              }>GPT-5 Mini (Faster)</option>
+              <option value="gpt-5-nano" ${
+                this.settings.ai.model === "gpt-5-nano" ? "selected" : ""
+              }>GPT-5 Nano (Lightweight)</option>
             </select>
             <p class="wa-settings-help">Choose the AI model for analysis and generation</p>
           </div>

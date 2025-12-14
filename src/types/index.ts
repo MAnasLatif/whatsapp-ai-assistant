@@ -13,11 +13,7 @@ export interface AISettings {
   enabledFeatures: AIFeatureFlags;
 }
 
-export type AIModel =
-  | "gpt-4o"
-  | "gpt-4o-mini"
-  | "gpt-4-turbo"
-  | "gpt-3.5-turbo";
+export type AIModel = "gpt-5.2" | "gpt-5" | "gpt-5-mini" | "gpt-5-nano";
 
 export type ResponseTone = "neutral" | "friendly" | "professional" | "casual";
 
@@ -69,7 +65,7 @@ export interface UserSettings {
 export const DEFAULT_SETTINGS: UserSettings = {
   ai: {
     apiKey: "",
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     defaultTone: "neutral",
     enabledFeatures: {
       analyze: true,
