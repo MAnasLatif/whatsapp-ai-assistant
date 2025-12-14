@@ -4,7 +4,7 @@
  */
 
 import { createApp, type App } from "@/ui/app";
-import { injectStyles } from "@/ui/styles";
+import { injectStyles } from "@/styles/ui-styles";
 import {
   detectTheme,
   waitForElement,

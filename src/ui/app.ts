@@ -15,7 +15,7 @@ import { SettingsPanel } from "./components/settings-panel";
 import { MessageActionButton } from "./components/message-action-button";
 import { ActionMenu } from "./components/action-menu";
 import { ResultsDisplay } from "./components/results-display";
-import { injectShadowStyles } from "./styles";
+import { injectShadowStyles } from "@/styles/ui-styles";
 import { DOMComponents } from "@/utils/dom-components";
 
 export interface App {

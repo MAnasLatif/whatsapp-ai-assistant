@@ -10,7 +10,7 @@ import {
   getCacheStats,
 } from "@/utils/storage";
 import type { UserSettings, AIModel, ResponseTone } from "@/types";
-import { createPopupStyles } from "./styles";
+import { createPopupStyles } from "@/styles/popup-styles";
 
 class PopupApp {
   private settings: UserSettings | null = null;
