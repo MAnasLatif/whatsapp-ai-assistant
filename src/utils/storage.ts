@@ -481,12 +481,11 @@ export async function getChatSettings(chatId: string): Promise<ChatSettings> {
     return (
       result[key] || {
         chatId,
-        autoAnalyze: true,
       }
     );
   } catch (error) {
     console.error(`Failed to load settings for chat ${chatId}:`, error);
-    return { chatId, autoAnalyze: true };
+    return { chatId };
   }
 }
 

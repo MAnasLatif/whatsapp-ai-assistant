@@ -361,17 +361,6 @@ export class GlobalSettingsPanel {
               <span class="wa-switch-slider"></span>
             </label>
           </div>
-
-          <div class="wa-settings-toggle">
-            <div>
-              <div class="wa-settings-toggle-label">Auto-analyze New Messages</div>
-              <div class="wa-settings-toggle-help">Automatically analyze messages as they arrive</div>
-            </div>
-            <label class="wa-switch">
-              <input type="checkbox" id="auto-analyze" />
-              <span class="wa-switch-slider"></span>
-            </label>
-          </div>
         </section>
 
         <!-- Cache Settings -->

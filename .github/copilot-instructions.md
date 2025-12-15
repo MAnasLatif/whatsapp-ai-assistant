@@ -296,7 +296,8 @@ npm run compile          # TypeScript type checking (no emit)
 5. **Icons must be from svgrepo.com** - Centralize in `src/utils/icons.ts`
 6. **Theme awareness required** - All injected UI must support light/dark themes dynamically
 7. **After Complete code review, run `npm run compile` to check for TypeScript errors**
-8. **Always test UI changes in both light and dark modes to ensure proper theming**
+8. **After Testing Create build** - Run `npm run build` to generate production-ready files
+9. **Always test UI changes in both light and dark modes to ensure proper theming**
 
 ## Extension Manifest Configuration
 

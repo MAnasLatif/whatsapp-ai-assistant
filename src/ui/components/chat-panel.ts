@@ -272,18 +272,6 @@ export class ChatPanel {
         </select>
         <div class="wa-ai-input-description">Default target language for translations in this chat</div>
       </div>
-
-      <div class="wa-ai-toggle">
-        <div>
-          <div class="wa-ai-toggle-label">Auto-Analyze Messages</div>
-          <div class="wa-ai-toggle-description">Automatically analyze new messages in this chat</div>
-        </div>
-        <div class="wa-ai-switch ${
-          settings?.autoAnalyze ? "active" : ""
-        }" id="wa-ai-auto-analyze">
-          <div class="wa-ai-switch-thumb"></div>
-        </div>
-      </div>
     </div>
     <div style="margin-top: 24px; display: flex; gap: 12px;">
       <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-save-settings">Save Settings</button>
@@ -337,10 +325,6 @@ export class ChatPanel {
     const translationLanguage =
       (panel.querySelector(DOMComponents.translationLang) as HTMLSelectElement)
         ?.value || undefined;
-    const autoAnalyze =
-      panel
-        .querySelector(DOMComponents.autoAnalyze)
-        ?.classList.contains("active") ?? true;
 
     const settings: ChatSettings = {
       chatId: this.chatId,
@@ -349,7 +333,6 @@ export class ChatPanel {
       replyLanguage: replyLanguage || undefined,
       analysisLanguage: analysisLanguage || undefined,
       translationLanguage: translationLanguage || undefined,
-      autoAnalyze,
     };
 
     await saveChatSettings(settings);

@@ -91,7 +91,6 @@ export const DOMComponents = {
   customPrompt: "#wa-ai-custom-prompt",
   preferredTone: "#wa-ai-preferred-tone",
   translationLang: "#wa-ai-translation-lang",
-  autoAnalyze: "#wa-ai-auto-analyze",
 
   // Action Menu
   actionMenu: ".wa-ai-action-menu",

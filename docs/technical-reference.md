@@ -265,7 +265,6 @@ interface UserSettings {
   // Preferences
   outputLanguage: string;
   messageLimit: number; // 5-50 messages
-  autoAnalyzeNewMessages: boolean;
   showHoverButtons: boolean;
 
   // Cache Settings
@@ -301,7 +300,6 @@ const DEFAULT_SETTINGS: UserSettings = {
   },
   outputLanguage: "en",
   messageLimit: 20,
-  autoAnalyzeNewMessages: false,
   showHoverButtons: true,
   cacheRetentionDays: 30,
   maxCacheSize: 100,

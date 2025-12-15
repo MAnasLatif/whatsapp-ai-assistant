@@ -172,7 +172,6 @@ export interface ChatSettings {
   chatId: string;
   customPrompt?: string;
   preferredTone?: ResponseTone;
-  autoAnalyze: boolean;
   replyLanguage?: string;
   analysisLanguage?: string;
   translationLanguage?: string;
