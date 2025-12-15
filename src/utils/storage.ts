@@ -11,7 +11,6 @@ import type {
   StoryThread,
   ChatContext,
   ChatSettings,
-  ChatSummary,
   DEFAULT_SETTINGS,
 } from "@/types";
 import { DEFAULT_SETTINGS as defaultSettings } from "@/types";
@@ -23,7 +22,6 @@ const STORAGE_KEYS = {
   CHAT_CACHE_PREFIX: "wa_ai_chat_",
   CHAT_CONTEXT_PREFIX: "wa_ai_context_",
   CHAT_SETTINGS_PREFIX: "wa_ai_chat_settings_",
-  CHAT_SUMMARY_PREFIX: "wa_ai_summary_",
 } as const;
 
 // ============================================
@@ -509,45 +507,15 @@ export async function saveChatSettings(settings: ChatSettings): Promise<void> {
 }
 
 /**
- * Get chat summary
- */
-export async function getChatSummary(
-  chatId: string
-): Promise<ChatSummary | null> {
-  try {
-    const key = `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${chatId}`;
-    const result = await browser.storage.local.get(key);
-    return result[key] || null;
-  } catch (error) {
-    console.error(`Failed to load summary for chat ${chatId}:`, error);
-    return null;
-  }
-}
-
-/**
- * Save chat summary
- */
-export async function saveChatSummary(summary: ChatSummary): Promise<void> {
-  try {
-    const key = `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${summary.chatId}`;
-    await browser.storage.local.set({ [key]: summary });
-  } catch (error) {
-    console.error(`Failed to save summary for chat ${summary.chatId}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Get complete chat context (settings, summary, stories)
+ * Get complete chat context (settings, stories)
  */
 export async function getChatContext(
   chatId: string,
   chatName: string = "",
   isGroup: boolean = false
 ): Promise<ChatContext> {
-  const [settings, summary, cache] = await Promise.all([
+  const [settings, cache] = await Promise.all([
     getChatSettings(chatId),
-    getChatSummary(chatId),
     getChatCache(chatId),
   ]);
 
@@ -556,7 +524,6 @@ export async function getChatContext(
     chatName: cache?.chatName || chatName,
     isGroup: cache?.isGroup ?? isGroup,
     settings,
-    summary,
     stories: cache?.stories || [],
     lastAccessed: Date.now(),
   };
@@ -569,7 +536,6 @@ export async function clearChatData(chatId: string): Promise<void> {
   const keysToRemove = [
     `${STORAGE_KEYS.CHAT_CACHE_PREFIX}${chatId}`,
     `${STORAGE_KEYS.CHAT_SETTINGS_PREFIX}${chatId}`,
-    `${STORAGE_KEYS.CHAT_SUMMARY_PREFIX}${chatId}`,
   ];
 
   await browser.storage.local.remove(keysToRemove);

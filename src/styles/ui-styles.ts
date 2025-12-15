@@ -602,54 +602,6 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   font-weight: 400;
 }
 
-/* Summary Container */
-.wa-ai-summary-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.wa-ai-summary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.wa-ai-summary-header h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: ${colors.text};
-  margin: 0 0 4px 0;
-}
-
-.wa-ai-summary-meta {
-  font-size: 12px;
-  color: ${colors.textSecondary};
-}
-
-.wa-ai-summary-content {
-  padding: 16px;
-  background: ${
-    theme === "dark" ? "rgba(255,255,255,0.05)" : colors.background
-  };
-  border: 1px solid ${colors.border};
-  border-radius: 8px;
-  line-height: 1.6;
-  color: ${colors.text};
-}
-
-.wa-ai-summary-section {
-  margin-top: 16px;
-}
-
-.wa-ai-summary-section h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: ${colors.text};
-  margin: 0 0 8px 0;
-}
-
 .wa-ai-tags {
   display: flex;
   flex-wrap: wrap;

@@ -168,15 +168,6 @@ export interface ChatCache {
   messageHashes: string[]; // To detect new messages
 }
 
-export interface ChatSummary {
-  chatId: string;
-  summary: string;
-  keyTopics: string[];
-  participants: string[];
-  messageCount: number;
-  lastUpdated: number;
-}
-
 export interface ChatSettings {
   chatId: string;
   customPrompt?: string;
@@ -192,7 +183,6 @@ export interface ChatContext {
   chatName: string;
   isGroup: boolean;
   settings: ChatSettings;
-  summary: ChatSummary | null;
   stories: StoryThread[];
   lastAccessed: number;
 }
@@ -247,7 +237,6 @@ export type MessageType =
   | "EXPLAIN_CONTEXT"
   | "DETECT_TONE"
   | "GENERATE_REPLY"
-  | "GENERATE_SUMMARY"
   | "GET_MESSAGES"
   | "GET_SETTINGS"
   | "SAVE_SETTINGS"

@@ -149,7 +149,6 @@ const STORAGE_KEYS = {
   CACHE_STATS: "wa_ai_cache_stats",
   CHAT_CACHE_PREFIX: "wa_ai_chat_", // + chatId
   CHAT_CONTEXT_PREFIX: "wa_ai_context_", // + chatId
-  CHAT_SUMMARY_PREFIX: "wa_ai_summary_", // + chatId
 };
 ```
 
@@ -261,7 +260,7 @@ Follow OpenAI's response format (https://platform.openai.com/docs/guides/migrate
 - **Images**: Extract blob via `extractImageBlob()` → convert to base64 → send to Vision API with GPT-5 model
 - **Voice**: Extract audio blob → convert to base64 → send to Whisper API
 
-Media processing results integrate into story threads via `saveChatSummary()`.
+Media processing results integrate into story threads.
 
 ## Development Workflow
 

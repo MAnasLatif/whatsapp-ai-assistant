@@ -223,21 +223,21 @@ interface ChatContext {
 }
 ```
 
-#### ChatStory
+#### StoryThread
 
 ```typescript
-interface ChatStory {
-  storyId: string; // Unique story identifier
+interface StoryThread {
+  id: string; // Unique story identifier
   chatId: string; // Associated chat ID
   title: string; // Story title/topic
-  summary: string; // Narrative summary
+  summary: string; // Narrative description of the story thread
   keyPoints: string[]; // Important points
   participants: string[]; // Involved participants
-  startMessageId: string; // First message in story
-  endMessageId: string; // Last message in story
   messageCount: number; // Number of messages in story
   createdAt: number; // Creation timestamp
-  lastUpdated: number; // Last update timestamp
+  updatedAt: number; // Last update timestamp
+  isActive: boolean; // Whether story is currently active
+  topics: string[]; // Topics discussed in this thread
   isActive: boolean; // true if story is ongoing
 }
 ```

@@ -1,6 +1,6 @@
 /**
  * Chat Panel Component - Chat-Specific Details
- * Shows per-chat summary, story threads, and settings
+ * Shows per-chat story threads and settings
  * Global settings moved to extension popup
  */
 
@@ -17,18 +17,17 @@ import { Icons } from "@/utils/icons";
 import {
   getChatContext,
   saveChatSettings,
-  saveChatSummary,
   getStories,
   deleteStory,
   clearChatData,
 } from "@/utils/storage";
 
-type TabId = "summary" | "stories" | "settings";
+type TabId = "stories" | "settings";
 
 export class ChatPanel {
   private panel: HTMLElement | null = null;
   private theme: WhatsAppTheme;
-  private activeTab: TabId = "summary";
+  private activeTab: TabId = "stories";
   private chatContext: ChatContext | null = null;
   private chatId: string;
   private chatName: string;
@@ -53,8 +52,7 @@ export class ChatPanel {
     panel.innerHTML = `
       <!-- Tabs -->
       <div class="wa-ai-chat-tabs">
-        <button class="wa-ai-tab-btn active" data-tab="summary">Summary</button>
-        <button class="wa-ai-tab-btn" data-tab="stories">Stories (${
+        <button class="wa-ai-tab-btn active" data-tab="stories">Stories (${
           this.chatContext?.stories.length || 0
         })</button>
         <button class="wa-ai-tab-btn" data-tab="settings">Settings</button>
@@ -65,7 +63,7 @@ export class ChatPanel {
 
       <!-- Content -->
       <div class="wa-ai-chat-content">
-        ${this.renderTabContent("summary")}
+        ${this.renderTabContent("stories")}
       </div>
     `;
 
@@ -106,8 +104,6 @@ export class ChatPanel {
 
   private renderTabContent(tab: TabId): string {
     switch (tab) {
-      case "summary":
-        return this.renderSummaryTab();
       case "stories":
         return this.renderStoriesTab();
       case "settings":
@@ -115,76 +111,6 @@ export class ChatPanel {
       default:
         return "";
     }
-  }
-
-  private renderSummaryTab(): string {
-    const summary = this.chatContext?.summary;
-
-    if (!summary) {
-      return `
-        <div class="wa-ai-empty-state">
-          ${Icons.empty}
-          <p>No summary yet</p>
-          <span>Use AI features to generate a conversation summary</span>
-          <button class="wa-ai-btn wa-ai-btn-primary" id="wa-ai-generate-summary" style="margin-top: 16px;">
-            Generate Summary
-          </button>
-        </div>
-      `;
-    }
-
-    const lastUpdated = new Date(summary.lastUpdated).toLocaleString();
-
-    return `
-      <div class="wa-ai-summary-container">
-        <div class="wa-ai-summary-header">
-          <div>
-            <h3>Conversation Summary</h3>
-            <p class="wa-ai-summary-meta">${
-              summary.messageCount
-            } messages • Last updated: ${lastUpdated}</p>
-          </div>
-          <button class="wa-ai-btn wa-ai-btn-secondary" id="wa-ai-refresh-summary">
-            ${Icons.refresh}
-            Refresh
-          </button>
-        </div>
-
-        <div class="wa-ai-summary-content">
-          <p>${summary.summary}</p>
-        </div>
-
-        ${
-          summary.keyTopics.length > 0
-            ? `
-          <div class="wa-ai-summary-section">
-            <h4>Key Topics</h4>
-            <div class="wa-ai-tags">
-              ${summary.keyTopics
-                .map((topic) => `<span class="wa-ai-tag">${topic}</span>`)
-                .join("")}
-            </div>
-          </div>
-        `
-            : ""
-        }
-
-        ${
-          summary.participants.length > 0
-            ? `
-          <div class="wa-ai-summary-section">
-            <h4>Participants</h4>
-            <div class="wa-ai-tags">
-              ${summary.participants
-                .map((p) => `<span class="wa-ai-tag">${p}</span>`)
-                .join("")}
-            </div>
-          </div>
-        `
-            : ""
-        }
-      </div>
-    `;
   }
 
   private renderStoriesTab(): string {
@@ -374,18 +300,6 @@ export class ChatPanel {
       });
     });
 
-    // Generate summary button
-    const generateSummary = panel.querySelector(DOMComponents.generateSummary);
-    generateSummary?.addEventListener("click", () =>
-      this.generateSummary(panel)
-    );
-
-    // Refresh summary button
-    const refreshSummary = panel.querySelector(DOMComponents.refreshSummary);
-    refreshSummary?.addEventListener("click", () =>
-      this.generateSummary(panel)
-    );
-
     // Save settings button
     const saveSettings = panel.querySelector(DOMComponents.saveSettings);
     saveSettings?.addEventListener("click", () => this.saveChatSettings(panel));
@@ -405,32 +319,6 @@ export class ChatPanel {
         if (storyId) this.handleDeleteStory(storyId, panel);
       });
     });
-  }
-
-  private async generateSummary(panel: HTMLElement): Promise<void> {
-    // Send message to background to generate summary
-    try {
-      const response = await browser.runtime.sendMessage({
-        type: "GENERATE_SUMMARY",
-        payload: { chatId: this.chatId },
-      });
-
-      if (response.success) {
-        // Reload context and refresh view
-        this.chatContext = await getChatContext(
-          this.chatId,
-          this.chatName,
-          this.isGroup
-        );
-        this.switchTab(
-          "summary",
-          panel.closest(DOMComponents.chatPanel) as HTMLElement
-        );
-      }
-    } catch (error) {
-      console.error("Failed to generate summary:", error);
-      alert("Failed to generate summary. Please try again.");
-    }
   }
 
   private async saveChatSettings(panel: HTMLElement): Promise<void> {
@@ -486,7 +374,7 @@ export class ChatPanel {
         this.isGroup
       );
       this.switchTab(
-        "summary",
+        "stories",
         panel.closest(DOMComponents.chatPanel) as HTMLElement
       );
     }

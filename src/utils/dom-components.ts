@@ -83,8 +83,7 @@ export const DOMComponents = {
   chatSwitch: ".wa-ai-switch",
 
   // Settings Panel - IDs
-  generateSummary: "#wa-ai-generate-summary",
-  refreshSummary: "#wa-ai-refresh-summary",
+
   saveSettings: "#wa-ai-save-settings",
   clearChatData: "#wa-ai-clear-chat-data",
   refreshStories: "#wa-ai-refresh-stories",
