@@ -251,7 +251,7 @@ interface UserSettings {
   // AI Configuration
   apiKey: string;
   model: AIModel;
-  defaultTone: ResponseTone;
+  defaultTones: ResponseTone[]; // Array of selected tones
 
   // Features
   enabledFeatures: {
@@ -290,7 +290,7 @@ type WhatsAppTheme = "light" | "dark";
 const DEFAULT_SETTINGS: UserSettings = {
   apiKey: "",
   model: "gpt-4o-mini",
-  defaultTone: "neutral",
+  defaultTones: ["neutral", "professional"],
   enabledFeatures: {
     analysis: true,
     translation: true,

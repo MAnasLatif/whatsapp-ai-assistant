@@ -89,7 +89,6 @@ export const DOMComponents = {
   refreshStories: "#wa-ai-refresh-stories",
   storiesList: "#wa-ai-stories-list",
   customPrompt: "#wa-ai-custom-prompt",
-  preferredTone: "#wa-ai-preferred-tone",
   translationLang: "#wa-ai-translation-lang",
 
   // Action Menu

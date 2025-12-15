@@ -55,6 +55,16 @@ export async function getSettings(): Promise<UserSettings> {
       );
     }
 
+    // Migration: Handle old defaultTone (singular) to defaultTones (array)
+    if (stored.ai && "defaultTone" in stored.ai) {
+      const oldTone = (stored.ai as any).defaultTone;
+      if (!stored.ai.defaultTones || stored.ai.defaultTones.length === 0) {
+        stored.ai.defaultTones = [oldTone];
+      }
+      delete (stored.ai as any).defaultTone;
+      console.log("[Storage] Migrated old defaultTone to defaultTones array");
+    }
+
     console.log("[Storage] Settings loaded from storage");
     // Merge with defaults to handle new settings fields
     return deepMerge(defaultSettings, stored) as UserSettings;
@@ -478,11 +488,28 @@ export async function getChatSettings(chatId: string): Promise<ChatSettings> {
   try {
     const key = `${STORAGE_KEYS.CHAT_SETTINGS_PREFIX}${chatId}`;
     const result = await browser.storage.local.get(key);
-    return (
-      result[key] || {
-        chatId,
+    const stored = result[key];
+
+    if (!stored) {
+      return { chatId };
+    }
+
+    // Migration: Handle old preferredTone (singular) to preferredTones (array)
+    if ("preferredTone" in stored) {
+      const oldTone = (stored as any).preferredTone;
+      if (
+        oldTone &&
+        (!stored.preferredTones || stored.preferredTones.length === 0)
+      ) {
+        stored.preferredTones = [oldTone];
       }
-    );
+      delete (stored as any).preferredTone;
+      console.log(
+        `[Storage] Migrated chat ${chatId} preferredTone to preferredTones array`
+      );
+    }
+
+    return stored;
   } catch (error) {
     console.error(`Failed to load settings for chat ${chatId}:`, error);
     return { chatId };

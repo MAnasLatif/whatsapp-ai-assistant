@@ -11,7 +11,7 @@ import type {
   ChatSettings,
   StoryThread,
 } from "@/types";
-import { LANGUAGE_OPTIONS } from "@/types";
+import { LANGUAGE_OPTIONS, TONE_OPTIONS } from "@/types";
 import { DOMComponents } from "@/utils/dom-components";
 import { Icons } from "@/utils/icons";
 import {
@@ -20,6 +20,7 @@ import {
   getStories,
   deleteStory,
   clearChatData,
+  getSettings,
 } from "@/utils/storage";
 
 type TabId = "stories" | "settings";
@@ -32,6 +33,7 @@ export class ChatPanel {
   private chatId: string;
   private chatName: string;
   private isGroup: boolean;
+  private globalSettings: any = null;
 
   constructor(
     theme: WhatsAppTheme,
@@ -210,22 +212,38 @@ export class ChatPanel {
         <div class="wa-ai-input-description">Custom instructions will be used alongside global AI settings</div>
       </div>
       <div class="wa-ai-form-group">
-        <label class="wa-ai-label">Preferred Tone</label>
-        <select class="wa-ai-select" id="wa-ai-preferred-tone">
-          <option value="">Use Global Setting</option>
-          <option value="neutral" ${
-            settings?.preferredTone === "neutral" ? "selected" : ""
-          }>Neutral</option>
-          <option value="friendly" ${
-            settings?.preferredTone === "friendly" ? "selected" : ""
-          }>Friendly</option>
-          <option value="professional" ${
-            settings?.preferredTone === "professional" ? "selected" : ""
-          }>Professional</option>
-          <option value="casual" ${
-            settings?.preferredTone === "casual" ? "selected" : ""
-          }>Casual</option>
-        </select>
+        <label class="wa-ai-label">Preferred Tones</label>
+        <div class="wa-ai-input-description" style="margin-bottom: 8px;">
+          ${
+            settings?.preferredTones && settings.preferredTones.length > 0
+              ? "Custom tones for this chat"
+              : this.globalSettings?.ai?.defaultTones
+              ? `Using global default: ${this.globalSettings.ai.defaultTones
+                  .map((t: string) => t.charAt(0).toUpperCase() + t.slice(1))
+                  .join(", ")}`
+              : "Leave empty to use global settings"
+          }
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto; padding: 8px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+          ${TONE_OPTIONS.map(
+            (tone) => `
+            <label class="wa-tone-checkbox" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px; border-radius: 6px; transition: background-color 0.2s;">
+              <input 
+                type="checkbox" 
+                class="preferred-tone-checkbox" 
+                value="${tone.value}"
+                ${
+                  settings?.preferredTones?.includes(tone.value)
+                    ? "checked"
+                    : ""
+                }
+                style="cursor: pointer;"
+              />
+              <div style="font-size: 13px;">${tone.label}</div>
+            </label>
+          `
+          ).join("")}
+        </div>
       </div>
 
       <div class="wa-ai-form-group">
@@ -313,9 +331,12 @@ export class ChatPanel {
     const customPrompt =
       (panel.querySelector(DOMComponents.customPrompt) as HTMLTextAreaElement)
         ?.value || "";
-    const preferredTone =
-      (panel.querySelector(DOMComponents.preferredTone) as HTMLSelectElement)
-        ?.value || undefined;
+
+    // Collect selected preferred tones
+    const preferredTones = Array.from(
+      panel.querySelectorAll(".preferred-tone-checkbox:checked")
+    ).map((checkbox) => (checkbox as HTMLInputElement).value);
+
     const replyLanguage =
       (panel.querySelector("#wa-ai-reply-lang") as HTMLSelectElement)?.value ||
       undefined;
@@ -329,7 +350,8 @@ export class ChatPanel {
     const settings: ChatSettings = {
       chatId: this.chatId,
       customPrompt: customPrompt || undefined,
-      preferredTone: preferredTone as any,
+      preferredTones:
+        preferredTones.length > 0 ? (preferredTones as any) : undefined,
       replyLanguage: replyLanguage || undefined,
       analysisLanguage: analysisLanguage || undefined,
       translationLanguage: translationLanguage || undefined,
@@ -408,7 +430,8 @@ export class ChatPanel {
   }
 
   async show(): Promise<void> {
-    // Load chat context
+    // Load global settings and chat context
+    this.globalSettings = await getSettings();
     this.chatContext = await getChatContext(
       this.chatId,
       this.chatName,

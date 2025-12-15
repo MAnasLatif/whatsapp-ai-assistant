@@ -6,8 +6,9 @@
 
 import { Icons } from "@/utils/icons";
 import { DOMComponents } from "@/utils/dom-components";
+import { getSettings, saveSettings } from "@/utils/storage";
 import type { UserSettings, AIModel, ResponseTone } from "@/types";
-import { DEFAULT_SETTINGS, LANGUAGE_OPTIONS } from "@/types";
+import { DEFAULT_SETTINGS, LANGUAGE_OPTIONS, TONE_OPTIONS } from "@/types";
 
 export class GlobalSettingsPanel {
   private panel: HTMLDivElement | null = null;
@@ -23,11 +24,8 @@ export class GlobalSettingsPanel {
 
   private async loadSettings(): Promise<void> {
     try {
-      const result = await browser.storage.local.get("userSettings");
-      if (result.userSettings) {
-        this.settings = { ...DEFAULT_SETTINGS, ...result.userSettings };
-        this.originalSettings = JSON.parse(JSON.stringify(this.settings)); // Deep copy
-      }
+      this.settings = await getSettings();
+      this.originalSettings = JSON.parse(JSON.stringify(this.settings)); // Deep copy
     } catch (error) {
       console.error("Failed to load settings:", error);
     }
@@ -35,7 +33,7 @@ export class GlobalSettingsPanel {
 
   private async saveSettings(): Promise<void> {
     try {
-      await browser.storage.local.set({ userSettings: this.settings });
+      await saveSettings(this.settings);
 
       // Show success message
       this.showSuccessMessage();
@@ -195,20 +193,33 @@ export class GlobalSettingsPanel {
         <!-- Default Preferences -->
         <section class="wa-settings-section">
           <div class="wa-settings-group">
-            <label class="wa-settings-label" for="default-tone">Default Response Tone</label>
-            <select id="default-tone" class="wa-settings-select">
-              <option value="neutral" ${
-                this.settings.ai.defaultTone === "neutral" ? "selected" : ""
-              }>Neutral</option>
-              <option value="friendly" ${
-                this.settings.ai.defaultTone === "friendly" ? "selected" : ""
-              }>Friendly</option>
-              <option value="professional" ${
-                this.settings.ai.defaultTone === "professional"
-                  ? "selected"
-                  : ""
-              }>Professional</option>
-            </select>
+            <label class="wa-settings-label">Default Response Tones</label>
+            <p class="wa-settings-help" style="margin-bottom: 12px;">Select multiple tones for AI responses</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+              ${TONE_OPTIONS.map(
+                (tone) => `
+                <label class="wa-tone-checkbox" style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background-color 0.2s;">
+                  <input 
+                    type="checkbox" 
+                    class="default-tone-checkbox" 
+                    value="${tone.value}"
+                    ${
+                      this.settings.ai.defaultTones?.includes(tone.value)
+                        ? "checked"
+                        : ""
+                    }
+                    style="margin-top: 2px; cursor: pointer;"
+                  />
+                  <div>
+                    <div style="font-weight: 500;">${tone.label}</div>
+                    <div style="font-size: 12px; opacity: 0.7;">${
+                      tone.description
+                    }</div>
+                  </div>
+                </label>
+              `
+              ).join("")}
+            </div>
           </div>
 
           <div class="wa-settings-group">
@@ -341,6 +352,21 @@ export class GlobalSettingsPanel {
             <label class="wa-switch">
               <input type="checkbox" id="feature-tone" ${
                 this.settings.ai.enabledFeatures.detectTone ? "checked" : ""
+              } />
+              <span class="wa-switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="wa-settings-toggle">
+            <div>
+              <div class="wa-settings-toggle-label">Smart Suggestions</div>
+              <div class="wa-settings-toggle-help">Get intelligent suggestions for better communication</div>
+            </div>
+            <label class="wa-switch">
+              <input type="checkbox" id="feature-smart-suggestions" ${
+                this.settings.ai.enabledFeatures.smartSuggestions
+                  ? "checked"
+                  : ""
               } />
               <span class="wa-switch-slider"></span>
             </label>
@@ -505,9 +531,12 @@ export class GlobalSettingsPanel {
     const currentModel = (
       this.panel.querySelector("#ai-model") as HTMLSelectElement
     )?.value;
-    const currentTone = (
-      this.panel.querySelector("#default-tone") as HTMLSelectElement
-    )?.value;
+
+    // Get current selected tones
+    const currentTones = Array.from(
+      this.panel.querySelectorAll(".default-tone-checkbox:checked")
+    ).map((checkbox) => (checkbox as HTMLInputElement).value);
+
     const currentReplyLanguage = (
       this.panel.querySelector("#reply-language") as HTMLSelectElement
     )?.value;
@@ -531,10 +560,16 @@ export class GlobalSettingsPanel {
     );
 
     // Check for changes
+    const tonesChanged =
+      currentTones.length !== this.originalSettings.ai.defaultTones.length ||
+      !currentTones.every((tone) =>
+        this.originalSettings.ai.defaultTones.includes(tone as ResponseTone)
+      );
+
     const hasChanges =
       currentApiKey !== this.originalSettings.ai.apiKey ||
       currentModel !== this.originalSettings.ai.model ||
-      currentTone !== this.originalSettings.ai.defaultTone ||
+      tonesChanged ||
       currentReplyLanguage !== this.originalSettings.general.replyLanguage ||
       currentAnalysisLanguage !==
         this.originalSettings.general.analysisLanguage ||
@@ -553,6 +588,12 @@ export class GlobalSettingsPanel {
         ?.checked !== this.originalSettings.ai.enabledFeatures.explainContext ||
       (this.panel.querySelector("#feature-tone") as HTMLInputElement)
         ?.checked !== this.originalSettings.ai.enabledFeatures.detectTone ||
+      (
+        this.panel.querySelector(
+          "#feature-smart-suggestions"
+        ) as HTMLInputElement
+      )?.checked !==
+        this.originalSettings.ai.enabledFeatures.smartSuggestions ||
       (this.panel.querySelector("#show-hover-buttons") as HTMLInputElement)
         ?.checked !== this.originalSettings.general.enableHoverButton ||
       (this.panel.querySelector("#auto-cleanup") as HTMLInputElement)
@@ -579,9 +620,18 @@ export class GlobalSettingsPanel {
       (this.panel.querySelector("#api-key") as HTMLInputElement)?.value || "";
     const model = (this.panel.querySelector("#ai-model") as HTMLSelectElement)
       ?.value as AIModel;
-    const defaultTone = (
-      this.panel.querySelector("#default-tone") as HTMLSelectElement
-    )?.value as ResponseTone;
+
+    // Collect selected tones
+    const defaultTones: ResponseTone[] = Array.from(
+      this.panel.querySelectorAll(".default-tone-checkbox:checked")
+    ).map((checkbox) => (checkbox as HTMLInputElement).value as ResponseTone);
+
+    // Ensure at least one tone is selected
+    if (defaultTones.length === 0) {
+      this.showErrorMessage("Please select at least one response tone");
+      return;
+    }
+
     const replyLanguage =
       (this.panel.querySelector("#reply-language") as HTMLSelectElement)
         ?.value || "en";
@@ -616,7 +666,7 @@ export class GlobalSettingsPanel {
       ai: {
         apiKey,
         model,
-        defaultTone,
+        defaultTones,
         enabledFeatures: {
           analyze:
             (this.panel.querySelector("#feature-analysis") as HTMLInputElement)
@@ -636,7 +686,12 @@ export class GlobalSettingsPanel {
           detectTone:
             (this.panel.querySelector("#feature-tone") as HTMLInputElement)
               ?.checked || false,
-          smartSuggestions: this.settings.ai.enabledFeatures.smartSuggestions,
+          smartSuggestions:
+            (
+              this.panel.querySelector(
+                "#feature-smart-suggestions"
+              ) as HTMLInputElement
+            )?.checked || false,
         },
       },
       general: {

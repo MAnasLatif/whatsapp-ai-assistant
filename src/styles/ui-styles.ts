@@ -1138,6 +1138,37 @@ function generateCSS(colors: ThemeColors, theme: WhatsAppTheme): string {
   transform: translateX(20px);
 }
 
+/* Tone Checkbox Styles */
+.wa-tone-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  border: 1px solid ${
+    theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+  };
+}
+
+.wa-tone-checkbox:hover {
+  background-color: ${
+    theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
+  };
+}
+
+.wa-tone-checkbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: ${colors.primary};
+}
+
+.wa-tone-checkbox input[type="checkbox"]:checked {
+  accent-color: ${colors.primary};
+}
+
 /* Settings Footer */
 .wa-global-settings-footer {
   display: flex;

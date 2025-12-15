@@ -9,13 +9,60 @@
 export interface AISettings {
   apiKey: string;
   model: AIModel;
-  defaultTone: ResponseTone;
+  defaultTones: ResponseTone[]; // Array of selected tones
   enabledFeatures: AIFeatureFlags;
 }
 
 export type AIModel = "gpt-5.2" | "gpt-5" | "gpt-5-mini" | "gpt-5-nano";
 
-export type ResponseTone = "neutral" | "friendly" | "professional" | "casual";
+export type ResponseTone =
+  | "neutral"
+  | "friendly"
+  | "professional"
+  | "casual"
+  | "formal"
+  | "humorous"
+  | "empathetic"
+  | "concise"
+  | "detailed"
+  | "encouraging";
+
+export const TONE_OPTIONS: {
+  value: ResponseTone;
+  label: string;
+  description: string;
+}[] = [
+  { value: "neutral", label: "Neutral", description: "Balanced and objective" },
+  {
+    value: "friendly",
+    label: "Friendly",
+    description: "Warm and approachable",
+  },
+  {
+    value: "professional",
+    label: "Professional",
+    description: "Business-appropriate",
+  },
+  { value: "casual", label: "Casual", description: "Relaxed and informal" },
+  { value: "formal", label: "Formal", description: "Polite and respectful" },
+  { value: "humorous", label: "Humorous", description: "Light and funny" },
+  {
+    value: "empathetic",
+    label: "Empathetic",
+    description: "Understanding and supportive",
+  },
+  { value: "concise", label: "Concise", description: "Brief and to the point" },
+  {
+    value: "detailed",
+    label: "Detailed",
+    description: "Thorough and explanatory",
+  },
+  {
+    value: "encouraging",
+    label: "Encouraging",
+    description: "Positive and motivating",
+  },
+];
 
 export interface AIFeatureFlags {
   analyze: boolean;
@@ -95,7 +142,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   ai: {
     apiKey: "",
     model: "gpt-5-mini",
-    defaultTone: "neutral",
+    defaultTones: ["neutral", "professional"],
     enabledFeatures: {
       analyze: true,
       translate: true,
@@ -171,7 +218,7 @@ export interface ChatCache {
 export interface ChatSettings {
   chatId: string;
   customPrompt?: string;
-  preferredTone?: ResponseTone;
+  preferredTones?: ResponseTone[]; // Array of selected tones
   replyLanguage?: string;
   analysisLanguage?: string;
   translationLanguage?: string;

@@ -436,17 +436,29 @@ async function generateReply(payload: {
     return { success: false, error: "API key not configured" };
   }
 
-  const tones = ["neutral", "friendly", "professional"];
+  // Use chat-specific tones if set, otherwise fall back to global default tones
+  const tones =
+    chatSettings.preferredTones && chatSettings.preferredTones.length > 0
+      ? chatSettings.preferredTones
+      : settings.ai.defaultTones;
+
   const { messageData } = payload;
   const replyLang =
     chatSettings.replyLanguage || settings.general.replyLanguage;
 
-  const systemPrompt = `Generate 3 different reply options to this WhatsApp message, each with a different tone.
-Return a JSON array with exactly 3 objects:
+  const systemPrompt = `Generate ${
+    tones.length
+  } different reply options to this WhatsApp message, each with a different tone.
+Return a JSON array with exactly ${
+    tones.length
+  } objects, one for each tone: ${tones.join(", ")}.
 [
-  {"tone": "neutral", "content": "reply text"},
-  {"tone": "friendly", "content": "reply text"},
-  {"tone": "professional", "content": "reply text"}
+  {"tone": "${tones[0]}", "content": "reply text"},
+  {"tone": "${tones[1]}", "content": "reply text"}${
+    tones.length > 2
+      ? `,\n  {"tone": "${tones[2]}", "content": "reply text"}`
+      : ""
+  }${tones.length > 3 ? "\n  // ... and so on for each tone" : ""}
 ]
 
 Guidelines:
